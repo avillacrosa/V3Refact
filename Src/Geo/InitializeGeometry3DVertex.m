@@ -30,8 +30,27 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).T = Twg(any(ismember(Twg,c),2),:);
 	end
 	Geo.Cn = BuildCn(Twg);
+	% TODO FIXME This should be inside cell loop
 	Geo    = GetYFromX(Geo, Set);
-	Geo	   = BuildFaces(Geo);
+	Geo	   = BuildFaces(Geo, Set);
+	total = 0;
+	for c = 1:length(Geo.Cells)
+		total = total + length(Geo.Cells(c).Y);
+		total = total + length(Geo.Cells(c).Faces);
+	end
+	Geo.totalY = total;
+	Geo = ComputeCellVolume(Geo, Set);
+	Geo = ComputeFaceArea(Geo,Set);
+	for c = 1:length(Geo.Cells)
+		Geo.Cells(c).Vol0 = Geo.Cells(c).Vol;
+		totA = 0;
+		for f = 1:length(Geo.Cells(c).Faces)
+			Geo.Cells(c).Faces(f).Area0 = Geo.Cells(c).Faces(f).Area;
+			totA = totA + Geo.Cells(c).Faces(f).Area0;
+		end
+		Geo.Cells(c).Area = totA;
+		Geo.Cells(c).Area0 = totA;
+	end
 	
 % 	[Cv,Cell]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCentre);
 end

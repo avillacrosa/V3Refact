@@ -64,13 +64,16 @@ function Set = SetDefault(Set)
 % 	DSet.analysisDir				= strcat(Set.OutputFolder,Esc,'Analysis',Esc);
 	DSet.SaveWorkspace				= false;
 	DSet.SaveSetting				= false;
-
+	%% ====================== Add missing fields to Set ===================
 	Set = addDefault(Set, DSet);
-
+	%% ========================= Derived variables ========================
     Set.lambdaS3					= Set.lambdaS2;
     Set.lambdaS4					= Set.lambdaS2;
     Set.f							= Set.s/2;
     Set.CellHeight					= DSet.CellAspectRatio*DSet.zScale; %!
     Set.nu_LP_Initial				= 50*Set.nu; %!
     Set.BarrierTri0					= 1e-3*Set.s; %!
+	Set.nu0                         = Set.nu;
+	Set.dt0=Set.tend/Set.Nincr;
+	Set.dt=Set.dt0;
 end

@@ -17,6 +17,7 @@ for c = 1
 
     %% Init file
 	nameout=fullfile(newSubFolder, ['Cell_', num2str(c, '%04d'), fileExtension]);
+	
     file=fopen(nameout,'w');
     fprintf(file,'%s\n','# vtk DataFile Version 3.98');
     fprintf(file,'%s\n','Delaunay_vtk');

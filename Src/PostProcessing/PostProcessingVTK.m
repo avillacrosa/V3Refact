@@ -1,5 +1,6 @@
 function PostProcessingVTK(Geo, Set)
 	%Create Cell Volume
-	CreateVtkVol(Geo, Set)
+% 	CreateVtkVol(Geo, Set)
+	CreateVtkCell(Geo, Set)
 
 end 

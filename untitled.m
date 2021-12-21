@@ -1,5 +1,5 @@
-s = cell(20,1);
-s{1} = struct();
-s{2} = struct();
-s{3} = struct();
-s{4} = struct();
+A = [1 0 0 
+	 0 1 1
+	 1 0 0];
+B = [1 1 1]';
+C = A\B;
