@@ -11,16 +11,18 @@ function [g,K,E] = KgGlobal(Geo, Set)
 
 	%% Surface Energy
 	[gs,Ks,ES]=KgSurfaceCellBasedAdhesion(Geo,Set);
+	% TODO FIXME, sort(abs(gs)) is slightly different from good version.
+	% Might have to do with face inversion???
 	%% Volume Energy
     [gv,Kv,EV]=KgVolume(Geo,Set);	
 	%% Viscous Energy
-	[gn,Kn,EN]=KgViscosity(Geo,Set);	
+% 	[gn,Kn,EN]=KgViscosity(Geo,Set);	
 	%% Plane Elasticity
 	% TODO
 	%% Bending Energy
 	% TODO
 	%% Triangle Energy Barrier
-	[gB,KB,EB]=KgTriEnergyBarrier(Geo, Set);
+% 	[gB,KB,EB]=KgTriEnergyBarrier(Geo, Set);
 	%% Propulsion Forces
 	% TODO
 	%% Contractility
@@ -28,7 +30,7 @@ function [g,K,E] = KgGlobal(Geo, Set)
 	%% Substrate
 	% TODO
 	%% Return
-	g = gs + gv + gn + gB;
-	K = Ks + Kv + Kn + KB;
+	g = gs + gv;
+	K = Ks + Kv;
 	E = ES + EV + EN + EB;
 end

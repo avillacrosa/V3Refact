@@ -52,5 +52,4 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).Area0 = totA;
 	end
 	
-% 	[Cv,Cell]=BuildCells(T,Y,X,xInternal,H, extrapolateFaceCentre);
 end

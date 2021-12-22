@@ -1,5 +1,5 @@
 function CellStr = baseCellStruct(X)
-	fields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0"];
+	fields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "YKIds"];
 	
 	CellStr = struct();
 	for f = 1:length(fields)

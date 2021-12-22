@@ -22,23 +22,15 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 				y1 = Ys(Tris(t,1),:);
 				y2 = Ys(Tris(t,2),:);
 				[gs,Ks]=gKDet(y1, y2, Cell.Faces(f).Centre);
-				nY = [Tris(t,:), Cell.Faces(f).gID];
+				nY = [Cell.YKIds(Tris(t,:))', Cell.Faces(f).gID];
 				ge=Assembleg(ge,gs,nY);
 				K = AssembleK(K,Ks*fact/6,nY);
 			end
 		end
-	
     	g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
-    	if nargout>1
-        	geMatrix = lambdaV*((ge)*(ge')/6/6/Cell.Vol0^2);
-        	K=K+geMatrix;
-        	EnergyV=EnergyV+ lambdaV/2 *((Cell.Vol-Cell.Vol0)/Cell.Vol0)^2;    
-    	end
-	
-	end
-	
-	if Set.Sparse == 2 && nargout>1
-    	K=sparse(si(1:sk),sj(1:sk),sv(1:sk),size(K, 1),size(K, 2))+K;
+    	geMatrix = lambdaV*((ge)*(ge')/6/6/Cell.Vol0^2);
+    	K=K+geMatrix;
+    	EnergyV=EnergyV+lambdaV/2 *((Cell.Vol-Cell.Vol0)/Cell.Vol0)^2;    
 	end
 end
 %%
