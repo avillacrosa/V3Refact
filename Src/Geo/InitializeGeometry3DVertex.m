@@ -39,7 +39,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		total = total + length(Geo.Cells(c).Faces);
 	end
 	Geo.totalY = total;
-	Geo = ComputeCellVolume(Geo, Set);
+	Geo = ComputeCellVolume(Geo, Set); % TODO FIXME problems already start here!!!
 	Geo = ComputeFaceArea(Geo,Set);
 	for c = 1:length(Geo.Cells)
 		Geo.Cells(c).Vol0 = Geo.Cells(c).Vol;

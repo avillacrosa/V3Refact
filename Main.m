@@ -17,8 +17,8 @@ fprintf('Generating geometry\n')
 t=0;
 numStep=1;
 
-PostProcessingVTK(Geo, Set)
+% PostProcessingVTK(Geo, Set)
 while t<=Set.tend
-	[g,K]=KgGlobal(Geo, Set);
-	[g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Set, K, g, numStep, t);
+	[g,K] = KgGlobal(Geo, Geo, Set);
+	[g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Set, K, g, numStep, t);
 end

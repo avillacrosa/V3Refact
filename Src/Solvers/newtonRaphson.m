@@ -1,4 +1,4 @@
-function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Set, K, g, numStep, t)
+function [g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Set, K, g, numStep, t)
 	% TODO FIXME Add dofs
 	dy=zeros(Geo.totalY*3, 1);
 	dyr=norm(dy);
@@ -10,14 +10,17 @@ function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Set, K, g,
 	auxgr=zeros(3,1);
 	auxgr(1)=gr;
 	ig=1;
+	alphas = [1.4e-1, 8.2e-2, 3.1e-1, 3.2e-1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     	dy=-K\g;
 		% TODO FIXME ADD...
-%     	alpha=LineSearch(Cell,SCn,dy,g,Dofs.FreeDofs,Set,Y,Y0,Yn,CellInput);
-		alpha=1;
+    	alpha=LineSearch(Geo, Set, g, dy);
+		alpha = alphas(Set.iter);
     	%% Update mechanical nodes
-    	dy_reshaped = reshape(dy * alpha, 3, Geo.totalY)';
+    	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY))';
     	[Geo] = updateVertices(Geo, Set, dy_reshaped);
+		PostProcessingVTK(Geo, Set)
+
 		% TODO FIXME ???
 %     	if Set.nu > Set.nu0 &&  gr<Set.tol
 %         	Set.nu = max(Set.nu/2, Set.nu0);
@@ -25,7 +28,7 @@ function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Set, K, g,
     	%% ----------- Compute K, g ---------------------------------------
 		% TODO FIXME ADD...
 %     	try
-    	[g,K,Energy]=KgGlobal(Geo, Set);
+    	[g,K,Energy]=KgGlobal(Geo, Geo, Set);
 %     	catch ME
 %         	if (strcmp(ME.identifier,'KgBulk:invertedTetrahedralElement'))
 %             	%% Correct inverted Tets
@@ -37,7 +40,7 @@ function [g,K,Cell, Y, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Set, K, g,
 %             	throw(ME)
 %         	end
 %     	end
-    	dyr=norm(dyr);
+    	dyr=norm(dy);
     	gr=norm(g);
     	fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
 	%     PostProcessingVTK(X,Y,T.Data,Cn,Cell,strcat(Set.OutputFolder,Esc,'ResultVTK_iter'),Set.iter,Set);

@@ -1,8 +1,10 @@
-function [g,K,E] = KgGlobal(Geo, Set)
+function [g,K,E] = KgGlobal(Geo, Geo_n, Set)
 	% The residual g and Jacobian K of all energies
 	%% Calculate basic information
-
+	
 	% TODO FIXME, I think this should go out of here. Either after a step
+	% !!!!!!!!!!!!!!!!!!!! DEBATE DIFFERENCE BETWEEN GEO_N AND GEO!!!!!!!!!
+	% !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	% converged or before entering KgGlobal (last option preferred I think)
 	[Geo] = ComputeCellVolume(Geo, Set);
 	[Geo] = ComputeFaceArea(Geo,Set);
@@ -11,12 +13,10 @@ function [g,K,E] = KgGlobal(Geo, Set)
 
 	%% Surface Energy
 	[gs,Ks,ES]=KgSurfaceCellBasedAdhesion(Geo,Set);
-	% TODO FIXME, sort(abs(gs)) is slightly different from good version.
-	% Might have to do with face inversion???
 	%% Volume Energy
     [gv,Kv,EV]=KgVolume(Geo,Set);	
 	%% Viscous Energy
-% 	[gn,Kn,EN]=KgViscosity(Geo,Set);	
+	[gf,Kf,EN]=KgViscosity(Geo,Geo_n,Set);	
 	%% Plane Elasticity
 	% TODO
 	%% Bending Energy
@@ -30,7 +30,7 @@ function [g,K,E] = KgGlobal(Geo, Set)
 	%% Substrate
 	% TODO
 	%% Return
-	g = gs + gv;
-	K = Ks + Kv;
-	E = ES + EV + EN + EB;
+	g = gs + gv + gf;
+	K = Ks + Kv + Kf;
+	E = ES + EV + EN;
 end

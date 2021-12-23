@@ -8,6 +8,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 	%% Loop over Cells 
 	% Analytical residual g and Jacobian K
 	% TODO FIXME hard code
+	Set.lambdaV = 5;
 	for c=1:3
 		Cell = Geo.Cells(c);
 		Ys = Cell.Y;
@@ -15,7 +16,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
     	fact=lambdaV*(Cell.Vol-Cell.Vol0)/Cell.Vol0^2;
     	
     	ge=zeros(size(g, 1), 1);
-	
+		ntris = 0;
 		for f = 1:length(Cell.Faces)
 			Tris = Cell.Faces(f).Tris;
 			for t=1:length(Tris)
@@ -25,6 +26,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 				nY = [Cell.YKIds(Tris(t,:))', Cell.Faces(f).gID];
 				ge=Assembleg(ge,gs,nY);
 				K = AssembleK(K,Ks*fact/6,nY);
+				ntris = ntris + 1;
 			end
 		end
     	g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
