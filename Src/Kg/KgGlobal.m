@@ -1,4 +1,4 @@
-function [g,K,E] = KgGlobal(Geo, Geo_n, Set)
+function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	% The residual g and Jacobian K of all energies
 	%% Calculate basic information
 	
@@ -16,7 +16,7 @@ function [g,K,E] = KgGlobal(Geo, Geo_n, Set)
 	%% Volume Energy
     [gv,Kv,EV]=KgVolume(Geo,Set);	
 	%% Viscous Energy
-	[gf,Kf,EN]=KgViscosity(Geo,Geo_n,Set);	
+	[gf,Kf,EN]=KgViscosity(Geo_n,Geo,Set);	
 	%% Plane Elasticity
 	% TODO
 	%% Bending Energy

@@ -1,12 +1,10 @@
-function [alpha]=LineSearch(Geo, Set, gc, dy)
-	%LINESEARCH
-	%
+function [alpha]=LineSearch(Geo_n, Geo, Set, gc, dy)
 	
 	%% Update mechanical nodes
 	dy_reshaped = reshape(dy, 3, (Geo.numF+Geo.numY))';
 	
 	% TODO FIXME why ???
-	[Geo_n] = updateVertices(Geo, Set, dy_reshaped);
+	[Geo] = updateVertices(Geo, Set, dy_reshaped);
 	
 	try
     	[g,~,~]=KgGlobal(Geo_n, Geo, Set);
