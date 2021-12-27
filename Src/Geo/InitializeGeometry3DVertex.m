@@ -1,7 +1,8 @@
 function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	%% Build nodal mesh 
 	X = buildTopo();
-	
+	Geo.nCells = length(X);
+
 	%% Centre Nodal position at (0,0)
 	X(:,1)=X(:,1)-mean(X(:,1));
 	X(:,2)=X(:,2)-mean(X(:,2));
@@ -11,40 +12,44 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 
 	Twg=delaunay(X);
 	Twg(all(ismember(Twg,Geo.XgID),2),:)=[];
-
 	% After removing ghost tetrahedras, some nodes become disconnected, 
 	% that is, not a part of any tetrahedra. Therefore, they should be 
 	% removed from X
 	X    = X(unique(Twg),:);
-	
+
 	% TODO FIXME Might be bad. Ideally use length of X before selecting
 	% unconnected nodes zeros(length(X),1)
 	conv = zeros(max(Twg,[],"all"),1);
 	conv(unique(Twg)) = 1:size(X);
 	Twg = conv(Twg);
+	Geo.numV = length(Twg);
 
 	% TODO FIXME This does not seem optimal...
-	Geo.Cells = baseCellStruct(length(X));
+	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds"];
+	FaceFields = ["ij", "Centre", "Edges", "globalIds", "InterfaceType", "Area", "Area0"];
+
+	Geo.Cells = BuildStructArray(length(X), CellFields);
 	for c = 1:length(X)
-		Geo.Cells(c).X = X(c,:);
-		Geo.Cells(c).T = Twg(any(ismember(Twg,c),2),:);
+		Geo.Cells(c).X     = X(c,:);
+		Geo.Cells(c).T     = Twg(any(ismember(Twg,c),2),:);
 	end
 
-	Geo.Cn = BuildCn(Twg);
-	% TODO FIXME This should be inside cell loop
-	Geo    = GetYFromX(Geo, Set);
-	Geo	   = BuildFaces(Geo, Set);
-	Geo = ComputeCellVolume(Geo, Set); % TODO FIXME problems already start here!!!
-	Geo = ComputeFaceArea(Geo,Set);
-	for c = 1:length(Geo.Cells)
-		Geo.Cells(c).Vol0 = Geo.Cells(c).Vol;
-		totA = 0;
-		for f = 1:length(Geo.Cells(c).Faces)
-			Geo.Cells(c).Faces(f).Area0 = Geo.Cells(c).Faces(f).Area;
-			totA = totA + Geo.Cells(c).Faces(f).Area0;
-		end
-		Geo.Cells(c).Area = totA;
-		Geo.Cells(c).Area0 = totA;
+	for c = 1:length(X)
+		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, ...
+													Geo.XgID, Set);
 	end
-	
+
+	for c = 1:Geo.nCells
+		Neigh_nodes = unique(Geo.Cells(c).T);
+		Neigh_nodes(Neigh_nodes==c)=[];
+		Geo.Cells(c).Faces = BuildStructArray(length(Neigh_nodes), FaceFields);
+
+		for j  = 1:length(Neigh_nodes)
+			cj    = Neigh_nodes(j);
+			CellJ = Geo.Cells(cj);
+			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.Cells(c), CellJ, Geo.XgID, Set);
+		end
+	end
+	Geo = BuildGlobalIds(Geo);
+% 	Geo.Cn = BuildCn(Twg); % Not sure if this is necessary...
 end
