@@ -19,7 +19,7 @@ numStep=1;
 
 % PostProcessingVTK(Geo, Set)
 while t<=Set.tend
-    [Geo] = Remodeling(Geo, Set);
+%     [Geo] = Remodeling(Geo, Set);
 	[g,K] = KgGlobal(Geo, Geo, Set);
 	[g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Set, K, g, numStep, t);
 end

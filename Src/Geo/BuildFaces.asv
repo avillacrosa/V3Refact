@@ -6,7 +6,7 @@ function Geo = BuildFaces(Geo, Set)
 	for c = 1:3
 		Tets = Geo.Cells(c).T; 
 		Ys   = Geo.Cells(c).Y;
-		Geo.Cells(c).Faces = struct('ij',{},'Centre',{}, ...
+		Geo.Cells(c).Faces = struct('ij',{},'YID',{},'Centre',{}, ...
 							'Tris', {}, 'gID', {}, 'InterfaceType', {},...
 							'Area', {}, 'Area0', {});
 		Neigh_nodes = unique(Tets);
@@ -63,6 +63,7 @@ function Geo = BuildFaces(Geo, Set)
 			end
 
 			temp_str.ij  = ij;
+			temp_str.YID = surf_ids; % TODO FIXME This is useless and tragic
 			temp_str.Tris  = tris;
 			temp_str.InterfaceType = ftype;
 			temp_str.Area = 0;
@@ -75,11 +76,10 @@ function Geo = BuildFaces(Geo, Set)
 					opp_face = opp_faces(of);
 					if sum(ismember(opp_face.ij, ij)) == 2
 						% TODO FIXME Yeah... not good
-						targetVerts = Geo.Cells(c).Y(face_ids,:);
-						CellJ = Geo.Cells(Neigh_nodes(j));
-						jrem = find(sum(ismember(CellJ.Y,targetVerts),2)==3);
-						[~, idx] = ismember(Geo.Cells(c).Y(face_ids,:), Geo.Cells(Neigh_nodes(j)).Y(jrem,:), 'rows');
-						ff = Geo.Cells(Neigh_nodes(j)).YKIds(jrem);
+												[~, idx] = ismember(Geo.Cells(c).Y(face_ids,:), Geo.Cells(Neigh_nodes(j)).Y(opp_face.YID,:), 'rows');
+
+						[~, idx] = ismember(Geo.Cells(c).Y(face_ids,:), Geo.Cells(Neigh_nodes(j)).Y(opp_face.YID,:), 'rows');
+						ff = Geo.Cells(Neigh_nodes(j)).YKIds(opp_face.YID);
 						YKIds(face_ids)=ff(idx); % Respect the given order from the original face...
 					end
 				end

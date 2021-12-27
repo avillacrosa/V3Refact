@@ -14,9 +14,9 @@ function [Geo] = flip23(Geo, Set)
 	for c = 1:3
 		Ys = Geo.Cells(c).Y;
 		Ts = Geo.Cells(c).T;
-		% WHOLE REMODELLING WILL BE INSIDE HERE
 		for f = 1:length(Geo.Cells(c).Faces)
 			Face = Geo.Cells(c).Faces(f);
+			% WHOLE REMODELLING WILL BE INSIDE HERE
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			[~,idVertex]=max(nrgs);
 			edgeToChange = Face.Tris(idVertex,:);
@@ -24,19 +24,20 @@ function [Geo] = flip23(Geo, Set)
     		n1=Ts(edgeToChange(1), ~ismember(Ts(edgeToChange(1),:),n3) );
     		n2=Ts(edgeToChange(2), ~ismember(Ts(edgeToChange(2),:),n3) );
     		num=[1 2 3 4];
-    		num=num(Ts(edgeToChange(1),:)==n1);
+    		num=num(Ts( edgeToChange(1),:)==n1);
 			if num == 2 || num == 4
         		Tnew=[n3([1 2]) n2 n1;
-              		  n3([2 3]) n2 n1;
-              		  n3([3 1]) n2 n1];
+              		n3([2 3]) n2 n1;
+              		n3([3 1]) n2 n1];
     		else
         		Tnew=[n3([1 2]) n1 n2;
-              		  n3([2 3]) n1 n2;
-              		  n3([3 1]) n1 n2];       
+              		n3([2 3]) n1 n2;
+              		n3([3 1]) n1 n2];       
 			end
 			ghostNodes = ismember(Tnew,Geo.XgID);
     		ghostNodes = all(ghostNodes,2);
-			if any(ghostNodes)
+    		if any(ghostNodes)
+        		Tnew(ghostNodes,:)=[];
         		fprintf('=>> Flips 2-2 are not allowed for now\n');
         		return
 			end
@@ -46,28 +47,27 @@ function [Geo] = flip23(Geo, Set)
         	Ynew(ghostNodes,:)=[];
 			
 			targetVerts = Geo.Cells(c).Y(edgeToChange,:);
-			CellJ = Geo.Cells(Face.ij(2));
-			jrem = find(sum(ismember(CellJ.Y,targetVerts),2)==3);
 			% TODO FIXME As in Function removeFaceinRemodelling. 
 			% Should probably include it there at some point...
 			Geo.Cells(c).Y(edgeToChange,:) = [];
 			Geo.Cells(c).T(edgeToChange,:) = [];
-
-			% TODO FIXME, is it necessary to make a full call to the object
-			% or by variable renaming is enough ??
-			Geo.Cells(Face.ij(2)).Y(jrem,:) = [];
-			Geo.Cells(Face.ij(2)).T(jrem,:) = [];
 			
 			% TODO FIXME as in Function addNewVerticesInRemodelling
 			% Should probably include it there at some point...
 			Geo.Cells(c).T(end+1:end+size(Tnew,1),:) = Tnew;
 			Geo.Cells(c).Y(end+1:end+size(Ynew,1),:) = Ynew;
-			Geo.Cells(Face.ij(2)).T(end+1:end+size(Tnew,1),:) = Tnew;
-			Geo.Cells(Face.ij(2)).Y(end+1:end+size(Ynew,1),:) = Ynew;
+
+			% TODO FIXME, quick and dirty. This should be taken care of 
+			% responsibly in the future...
+			CellJ = Geo.Cells(Face.ij(2));
+			jrem = find(sum(ismember(CellJ.Y,targetVerts),2)==3);
+			% TODO FIXME, is it necessary to make a full call to the object
+			% or by variable renaming is enough ??
+			Geo.Cells(Face.ij(2)).Y(jrem) = []
 
 			% TODO FIXME, RebuildCells, pretty sure this can be done in a 
 			% cleaner and smarter way.
-			Geo	= BuildFaces(Geo, Set);
+			Geo	   = BuildFaces(Geo, Set);
 			Geo = ComputeCellVolume(Geo, Set); 
 			Geo = ComputeFaceArea(Geo,Set);
 			for cc = 1:length(Geo.Cells)

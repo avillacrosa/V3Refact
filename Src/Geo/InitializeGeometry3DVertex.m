@@ -29,16 +29,11 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).X = X(c,:);
 		Geo.Cells(c).T = Twg(any(ismember(Twg,c),2),:);
 	end
+
 	Geo.Cn = BuildCn(Twg);
 	% TODO FIXME This should be inside cell loop
 	Geo    = GetYFromX(Geo, Set);
 	Geo	   = BuildFaces(Geo, Set);
-	total = 0;
-	for c = 1:length(Geo.Cells)
-		total = total + length(Geo.Cells(c).Y);
-		total = total + length(Geo.Cells(c).Faces);
-	end
-	Geo.totalY = total;
 	Geo = ComputeCellVolume(Geo, Set); % TODO FIXME problems already start here!!!
 	Geo = ComputeFaceArea(Geo,Set);
 	for c = 1:length(Geo.Cells)
