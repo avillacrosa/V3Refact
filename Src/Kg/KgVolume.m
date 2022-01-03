@@ -9,7 +9,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 	% Analytical residual g and Jacobian K
 	% TODO FIXME hard code
 	Set.lambdaV = 5;
-	for c=1:3
+	for c=1:Geo.nCells
 		Cell = Geo.Cells(c);
 		Ys = Cell.Y;
     	lambdaV=Set.lambdaV;
@@ -19,15 +19,18 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 		ntris = 0;
 		for f = 1:length(Cell.Faces)
 			Tris = Cell.Faces(f).Tris;
-			for t=1:length(Tris)
+            for t=1:length(Tris)
 				y1 = Ys(Tris(t,1),:);
 				y2 = Ys(Tris(t,2),:);
-				[gs,Ks]=gKDet(y1, y2, Cell.Faces(f).Centre);
-				nY = [Cell.YKIds(Tris(t,:))', Cell.Faces(f).gID];
-				ge=Assembleg(ge,gs,nY);
+				[gs,Ks]=gKDet(y1, y2, Cell.Faces(f).Centre); % gs is equal everytime
+				nY = [Cell.globalIds(Tris(t,:))', Cell.Faces(f).globalIds];
+				ge=Assembleg(ge,gs,nY); % but this assembly is fucked, only for the 3rd cell?
 				K = AssembleK(K,Ks*fact/6,nY);
 				ntris = ntris + 1;
-			end
+            end
+%             if c == 3
+%                 disp(norm(ge));
+%             end
 		end
     	g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
     	geMatrix = lambdaV*((ge)*(ge')/6/6/Cell.Vol0^2);

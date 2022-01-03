@@ -22,11 +22,10 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	conv = zeros(max(Twg,[],"all"),1);
 	conv(unique(Twg)) = 1:size(X);
 	Twg = conv(Twg);
-	Geo.numV = length(Twg);
 
 	% TODO FIXME This does not seem optimal...
 	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds"];
-	FaceFields = ["ij", "Centre", "Edges", "globalIds", "InterfaceType", "Area", "Area0"];
+	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0", "TrisArea"];
 
 	Geo.Cells = BuildStructArray(length(X), CellFields);
 	for c = 1:length(X)
@@ -43,13 +42,16 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Neigh_nodes = unique(Geo.Cells(c).T);
 		Neigh_nodes(Neigh_nodes==c)=[];
 		Geo.Cells(c).Faces = BuildStructArray(length(Neigh_nodes), FaceFields);
-
-		for j  = 1:length(Neigh_nodes)
+        for j  = 1:length(Neigh_nodes)
 			cj    = Neigh_nodes(j);
 			CellJ = Geo.Cells(cj);
 			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.Cells(c), CellJ, Geo.XgID, Set);
-		end
+            Geo.Cells(c).Faces(j).Area0 = Geo.Cells(c).Faces(j).Area;
+        end
+        Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
+        Geo.Cells(c).Area0 = Geo.Cells(c).Area;
+        Geo.Cells(c).Vol   = ComputeCellVolume(Geo.Cells(c));
+        Geo.Cells(c).Vol0  = Geo.Cells(c).Vol;
 	end
 	Geo = BuildGlobalIds(Geo);
-% 	Geo.Cn = BuildCn(Twg); % Not sure if this is necessary...
 end

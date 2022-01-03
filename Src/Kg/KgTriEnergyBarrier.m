@@ -4,26 +4,25 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 
 	[g, K] = initializeKg(Geo, Set);
 	EnergyB = 0;
-	for c=1:3
+	for c=1:Geo.nCells
 		Cell = Geo.Cells(c);
 		Ys = Cell.Y;
 		lambdaB=Set.lambdaB;
 		for f = 1:length(Cell.Faces)
+            Face = Cell.Faces(f);
 			Tris = Cell.Faces(f).Tris;
 			for t = 1:length(Tris)
-				fact=-((lambdaB*Set.Beta)/Set.BarrierTri0);% * ...
-				% TODO FIXME, killed :(
-% 					exp(lambdaB*(1-Set.Beta*Cell.SAreaTri{i}(t)/Set.BarrierTri0));
+				fact=-((lambdaB*Set.Beta)/Set.BarrierTri0)* ... % * ...
+				                    exp(lambdaB*(1-Set.Beta*Face.TrisArea(t)/Set.BarrierTri0));
 				fact2=fact*-((lambdaB*Set.Beta)/Set.BarrierTri0);
 				y1 = Ys(Tris(t,1),:);
 				y2 = Ys(Tris(t,2),:);
-				nY = [Tris(t,:), Cell.Faces(f).gID];
-				[gs,Ks,Kss]=gKSArea(y1,y2,Cell.Faces(f).Centre);
+                [gs,Ks,Kss]=gKSArea(y1,y2,Cell.Faces(f).Centre);
+				nY = [Cell.globalIds(Tris(t,:))', Face.globalIds];
 	        	g=Assembleg(g,gs*fact,nY);	
 				Ks=(gs)*(gs')*fact2+Ks*fact+Kss*fact;
 				K= AssembleK(K,Ks,nY);
-				% TODO FIXME, killed :(				
-% 				EnergyB=EnergyB+ exp(lambdaB*(1-Set.Beta*Cell.SAreaTri{i}(t)/Set.BarrierTri0));
+				EnergyB=EnergyB+ exp(lambdaB*(1-Set.Beta*Face.TrisArea(t)/Set.BarrierTri0));
 			end
 		end
 	end

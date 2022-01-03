@@ -6,8 +6,14 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	% !!!!!!!!!!!!!!!!!!!! DEBATE DIFFERENCE BETWEEN GEO_N AND GEO!!!!!!!!!
 	% !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	% converged or before entering KgGlobal (last option preferred I think)
-	[Geo] = ComputeCellVolume(Geo, Set);
-	[Geo] = ComputeFaceArea(Geo,Set);
+    for c = 1:Geo.nCells
+        Cell = Geo.Cells(c);
+        for f = 1:length(Cell.Faces)
+            Face = Geo.Cells(c).Faces(f);
+	        [Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea] = ComputeFaceArea(Face, Cell.Y);
+        end
+        Geo.Cells(c).Vol = ComputeCellVolume(Cell);
+    end
 	% [Cell] = Cell.computeEdgeLengths(Y);
 	% [Cell] = Cell.computeEdgeLocation(Y);
 
@@ -22,7 +28,7 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	%% Bending Energy
 	% TODO
 	%% Triangle Energy Barrier
-% 	[gB,KB,EB]=KgTriEnergyBarrier(Geo, Set);
+	[gB,KB,EB]=KgTriEnergyBarrier(Geo, Set);
 	%% Propulsion Forces
 	% TODO
 	%% Contractility
@@ -30,7 +36,7 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	%% Substrate
 	% TODO
 	%% Return
-	g = gs + gv + gf;
-	K = Ks + Kv + Kf;
-	E = ES + EV + EN;
+	g = gs + gv + gf + gB;
+	K = Ks + Kv + Kf + KB;
+	E = ES + EV + EN + EB;
 end

@@ -7,11 +7,11 @@ function [g,K,EnergyF]=KgViscosity(Geo_n, Geo, Set)
 	for c = 1:3
 		Cell = Geo.Cells(c);
 		Cell_n = Geo_n.Cells(c);
-		dY(Cell.YKIds,:) = (Cell.Y-Cell_n.Y);
+		dY(Cell.globalIds,:) = (Cell.Y-Cell_n.Y);
 		for f = 1:length(Cell.Faces)
 			Face = Cell.Faces(f);
 			Face_n = Cell_n.Faces(f);
-			dY(Face.gID,:) = (Face.Centre-Face_n.Centre);
+			dY(Face.globalIds,:) = (Face.Centre-Face_n.Centre);
 		end
 	end
 	g = (Set.nu/Set.dt).*reshape(dY', (Geo.numF+Geo.numY)*3, 1);

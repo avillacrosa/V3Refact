@@ -11,18 +11,18 @@ function [Geo] = flip23(Geo, Set)
 
 %% loop over the rest of faces (Flip23)
 
-	for c = 1:3
-		Ys = Geo.Cells(c).Y;
-		Ts = Geo.Cells(c).T;
+	for c = 1:Geo.nCells
 		% WHOLE REMODELLING WILL BE INSIDE HERE
 		for f = 1:length(Geo.Cells(c).Faces)
+		    Ys = Geo.Cells(c).Y;
+		    Ts = Geo.Cells(c).T;
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			[~,idVertex]=max(nrgs);
 			edgeToChange = Face.Tris(idVertex,:);
 		    n3=Ts(edgeToChange(1),  ismember(Ts(edgeToChange(1),:), Ts(edgeToChange(2),:)));
-    		n1=Ts(edgeToChange(1), ~ismember(Ts(edgeToChange(1),:),n3) );
-    		n2=Ts(edgeToChange(2), ~ismember(Ts(edgeToChange(2),:),n3) );
+    		n1=Ts(edgeToChange(1), ~ismember(Ts(edgeToChange(1),:),n3));
+    		n2=Ts(edgeToChange(2), ~ismember(Ts(edgeToChange(2),:),n3));
     		num=[1 2 3 4];
     		num=num(Ts(edgeToChange(1),:)==n1);
 			if num == 2 || num == 4
@@ -44,7 +44,7 @@ function [Geo] = flip23(Geo, Set)
 			fprintf('=>> 23 Flip.\n');
         	Ynew=PerformFlip23(Ys(edgeToChange,:),Geo,n3);
         	Ynew(ghostNodes,:)=[];
-			
+			% ========== YNEW TNEW THE SAME UP TO HERE =============
 			targetVerts = Geo.Cells(c).Y(edgeToChange,:);
 			CellJ = Geo.Cells(Face.ij(2));
 			jrem = find(sum(ismember(CellJ.Y,targetVerts),2)==3);
@@ -65,21 +65,29 @@ function [Geo] = flip23(Geo, Set)
 			Geo.Cells(Face.ij(2)).T(end+1:end+size(Tnew,1),:) = Tnew;
 			Geo.Cells(Face.ij(2)).Y(end+1:end+size(Ynew,1),:) = Ynew;
 
+            if length(Ynew) ==3
+                fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),length(Geo.Cells(c).Y)+1:length(Geo.Cells(c).Y)+size(Ynew,1));
+            elseif length(Ynew) ==2
+                fprintf('Vertices number %i %i -> were replaced by -> %i %i.\n',edgeToChange(1),edgeToChange(2),length(Geo.Cells(c).Y)+1:length(Geo.Cells(c).Y)+size(Ynew,1));
+            end 
 			% TODO FIXME, RebuildCells, pretty sure this can be done in a 
 			% cleaner and smarter way.
-			Geo	= BuildFaces(Geo, Set);
-			Geo = ComputeCellVolume(Geo, Set); 
-			Geo = ComputeFaceArea(Geo,Set);
-			for cc = 1:length(Geo.Cells)
-				Geo.Cells(cc).Vol0 = Geo.Cells(cc).Vol;
-				totA = 0;
-				for ff = 1:length(Geo.Cells(cc).Faces)
-					Geo.Cells(cc).Faces(ff).Area0 = Geo.Cells(cc).Faces(f).Area;
-					totA = totA + Geo.Cells(cc).Faces(ff).Area0;
-				end
-				Geo.Cells(cc).Area = totA;
-				Geo.Cells(cc).Area0 = totA;
-			end
+            % TODO FIXME, this can probablye done with only the 2
+            % implicated cells, and then recalculate global Ids after all
+            % flips are performed ???
+            for cc = 1:Geo.nCells
+		        Neigh_nodes = unique(Geo.Cells(cc).T);
+		        Neigh_nodes(Neigh_nodes==cc)=[];
+                for j  = 1:length(Neigh_nodes)
+			        cj    = Neigh_nodes(j);
+			        CellJ = Geo.Cells(cj);
+			        Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, Geo.Cells(cc), CellJ, Geo.XgID, Set);
+                end
+                Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));
+                Geo.Cells(cc).Vol   = ComputeCellVolume(Geo.Cells(cc));
+            end
+	        Geo = BuildGlobalIds(Geo);
+            PostProcessingVTK(Geo, Set)
 		end
 	end
 	% TODO FIXME, By now, let's force remodelling

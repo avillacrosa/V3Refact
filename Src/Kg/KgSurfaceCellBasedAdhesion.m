@@ -24,7 +24,7 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 			fact0=fact0+Lambda*face.Area;
 		end
 		fact=fact0/Cell.Area0^2;
-		for f=1:length(Cell.Faces)
+        for f=1:length(Cell.Faces)
 			face = Cell.Faces(f);
 			Tris=Cell.Faces(f).Tris;
 			if face.InterfaceType==0
@@ -36,18 +36,18 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 			elseif face.InterfaceType==2
 				% TODO FIXME ADAPT THIS
 				Lambda=Set.lambdaS3*1;
-			end
-			for t = 1:length(Tris)
+            end
+            for t = 1:length(Tris)
 				y1 = Ys(Tris(t,1),:);
 				y2 = Ys(Tris(t,2),:);
 				[gs,Ks,Kss]=gKSArea(y1,y2,face.Centre);
 				gs=Lambda*gs;
-				nY = [Cell.YKIds(Tris(t,:))', face.gID];
+				nY = [Cell.globalIds(Tris(t,:))', face.globalIds];
             	ge=Assembleg(ge,gs,nY);
 				Ks=fact*Lambda*(Ks+Kss);
 				K = AssembleK(K,Ks,nY);
-			end
-		end
+            end
+        end
 		g=g+ge*fact;
 		K=K+(ge)*(ge')/(Cell.Area0^2);
     	EnergyS=EnergyS+ (1/2)*fact0*fact;
