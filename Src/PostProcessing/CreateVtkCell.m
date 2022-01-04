@@ -1,4 +1,4 @@
-function CreateVtkCell(Geo, Set)
+function CreateVtkCell(Geo, Set, Step)
 	%% ============================= INITIATE =============================
 	str0=Set.OutputFolder;                          % First Name of the file 
 	fileExtension='.vtk';                            % extension
@@ -7,10 +7,10 @@ function CreateVtkCell(Geo, Set)
 	if ~exist(newSubFolder, 'dir')
     	mkdir(newSubFolder);
 	end
-	for c = 1:3
+	for c = 1:Geo.nCells
 		Ys = Geo.Cells(c).Y;
 
-		nameout=fullfile(newSubFolder, ['Cell_', num2str(c, '%04d'), fileExtension]);
+		nameout=fullfile(newSubFolder, ['Cell_', num2str(c, '%04d'), '_t', num2str(Step, '%04d'), fileExtension]);
 		fout=fopen(nameout,'w');
 
 		header = "# vtk DataFile Version 3.98\n";

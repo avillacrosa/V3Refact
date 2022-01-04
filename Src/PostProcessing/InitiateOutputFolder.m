@@ -6,7 +6,7 @@ function InitiateOutputFolder(Set)
 		dlt = 'y';
 		if isempty(dlt) || dlt == 'y'
 			try
-				rmdir(DirOutput)
+				rmdir(DirOutput, 's')
 				mkdir(DirOutput)
 			catch
 				fprintf(" %s was not deleted." + ...

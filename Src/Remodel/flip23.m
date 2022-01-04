@@ -1,4 +1,4 @@
-function [Geo] = flip23(Geo, Set)
+function [Geo] = flip23(Geo, Dofs, Set)
 %FLIP23 Perform flip 2-3 operation, when the edge is short
 %   Involves replacing the edge pq as it shorten to zero length by the new 
 %   triangle ghf that is shared between cell A and B (A has been displaced 
@@ -19,6 +19,10 @@ function [Geo] = flip23(Geo, Set)
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			[~,idVertex]=max(nrgs);
+            if max(nrgs)<Set.RemodelTol
+                continue
+            end
+            fprintf("FLIPPING BURGERS!!! \n");
 			edgeToChange = Face.Tris(idVertex,:);
 		    n3=Ts(edgeToChange(1),  ismember(Ts(edgeToChange(1),:), Ts(edgeToChange(2),:)));
     		n1=Ts(edgeToChange(1), ~ismember(Ts(edgeToChange(1),:),n3));
@@ -60,10 +64,15 @@ function [Geo] = flip23(Geo, Set)
 			
 			% TODO FIXME as in Function addNewVerticesInRemodelling
 			% Should probably include it there at some point...
-			Geo.Cells(c).T(end+1:end+size(Tnew,1),:) = Tnew;
-			Geo.Cells(c).Y(end+1:end+size(Ynew,1),:) = Ynew;
-			Geo.Cells(Face.ij(2)).T(end+1:end+size(Tnew,1),:) = Tnew;
-			Geo.Cells(Face.ij(2)).Y(end+1:end+size(Ynew,1),:) = Ynew;
+
+            % TODO FIXME bad...
+            cidxs = find(sum(ismember(Tnew,c)==1,2));
+            jidxs = find(sum(ismember(Tnew,Face.ij(2))==1,2));
+
+			Geo.Cells(c).T(end+1:end+length(cidxs),:) = Tnew(cidxs,:);
+			Geo.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
+			Geo.Cells(Face.ij(2)).T(end+1:end+length(jidxs),:) = Tnew(jidxs,:);
+			Geo.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
 
             if length(Ynew) ==3
                 fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),length(Geo.Cells(c).Y)+1:length(Geo.Cells(c).Y)+size(Ynew,1));
@@ -75,19 +84,31 @@ function [Geo] = flip23(Geo, Set)
             % TODO FIXME, this can probablye done with only the 2
             % implicated cells, and then recalculate global Ids after all
             % flips are performed ???
+%             PostProcessingVTK(Geo, Set, -1)
             for cc = 1:Geo.nCells
+                Cell = Geo.Cells(cc);
 		        Neigh_nodes = unique(Geo.Cells(cc).T);
 		        Neigh_nodes(Neigh_nodes==cc)=[];
                 for j  = 1:length(Neigh_nodes)
 			        cj    = Neigh_nodes(j);
-			        CellJ = Geo.Cells(cj);
-			        Geo.Cells(cc).Faces(j) = BuildFace(cc, cj, Geo.Cells(cc), CellJ, Geo.XgID, Set);
+                    ij			= [cc, cj];
+	                face_ids	= sum(ismember(Cell.T,ij),2)==2; 
+                    Geo.Cells(cc).Faces(j).Tris	= BuildEdges(Cell.T, face_ids, Cell.Faces(j).Centre, Cell.X, Cell.Y);
                 end
                 Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));
                 Geo.Cells(cc).Vol   = ComputeCellVolume(Geo.Cells(cc));
             end
 	        Geo = BuildGlobalIds(Geo);
-            PostProcessingVTK(Geo, Set)
+
+            DofsR = Dofs;
+            DofsR.Free = Geo.Cells(c).globalIds(end-length(cidxs):end,:);
+            DofsR.Free = 3.*(kron(DofsR.Free',[1 1 1])-1)+kron(ones(1,length(DofsR.Free')),[1 2 3]);
+            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo, Dofs, Set);
+            PostProcessingVTK(Geo, Set, -1)
+            return
+            %=========== UP UNTIL HERE WE SHOULD BE HAVE TO BE OK =========
+
+            % TODO FIXME also update DOFS?
 		end
 	end
 	% TODO FIXME, By now, let's force remodelling

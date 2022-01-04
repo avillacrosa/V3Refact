@@ -5,13 +5,20 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
 	% clean way to write it ?
 	vtk_order(1) = 1;
 	prev_tet  = FaceTets(1,:);
-	for yi = 2:length(FaceTets)
-		i = sum(ismember(FaceTets, prev_tet),2)==3;
-		i = i & ~ismember(1:length(FaceTets),vtk_order)';
-		i = find(i);
-		vtk_order(yi) = i(1);
-		prev_tet = FaceTets(i(1),:);
-	end
+    if size(FaceTets,1) > 3
+        for yi = 2:length(FaceTets)
+		    i = sum(ismember(FaceTets, prev_tet),2)==3;
+		    i = i & ~ismember(1:length(FaceTets),vtk_order)';
+		    i = find(i);
+		    vtk_order(yi) = i(1);
+		    prev_tet = FaceTets(i(1),:);
+        end
+    else
+        % TODO FIXME is this enough??? will it get flipped later if not
+        % correct ???
+        fprintf("TRIIIIIIIIIIIIIIIIIIIIII\n");
+        vtk_order = [1 2 3]';
+    end
 	surf_ids  = 1:length(Tets); 
 	surf_ids  = surf_ids(FaceIds);
 	surf_ids  = surf_ids(vtk_order);

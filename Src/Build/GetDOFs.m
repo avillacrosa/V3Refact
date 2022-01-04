@@ -13,15 +13,24 @@ function [Dofs]=GetDOFs(Geo, Set)
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Geo.Cells(c).Faces(f);
             if Face.Centre(2) < Set.VFixd
-                gconstrained(dim*(Face.globalIds-1)+2) = 1;
+                gconstrained(dim*(Face.globalIds-1)+1:dim*Face.globalIds) = 1;
             elseif Face.Centre(2) > Set.VPrescribed
                 gprescribed(dim*(Face.globalIds-1)+2) = 1;
+                gconstrained(dim*(Face.globalIds-1)+1) = 1;
+                gconstrained(dim*(Face.globalIds-1)+3) = 1;
             end
         end
         fixY = Y(:,2) < Set.VFixd;
         preY = Y(:,2) > Set.VPrescribed;
-        gconstrained(dim*(gIDsY(fixY)-1)+2) = 1;
+        for ff = 1:length(find(fixY))
+            idx = find(fixY);
+            idx = idx(ff);
+            gconstrained(dim*(gIDsY(idx)-1)+1:dim*gIDsY(idx)) = 1;
+        end
+        
         gprescribed(dim*(gIDsY(preY)-1)+2) = 1;
+        gconstrained(dim*(gIDsY(preY)-1)+1) = 1;
+        gconstrained(dim*(gIDsY(preY)-1)+3) = 1;
     end
     Dofs.Free = find(gconstrained==0 & gprescribed==0);
     Dofs.Fix  = [find(gconstrained); find(gprescribed)];
