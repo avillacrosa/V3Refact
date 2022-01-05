@@ -4,7 +4,7 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 	% TODO FIXME BAD!
 	Set.lambdaS1 = 1;
 	Set.lambdaS2 = 0.8;
-	for c = 1:3
+	for c = 1:Geo.nCells
 		Cell  = Geo.Cells(c);
 		Ys    = Geo.Cells(c).Y;
 		ge	  = zeros(size(g, 1), 1);
@@ -40,12 +40,22 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
             for t = 1:length(Tris)
 				y1 = Ys(Tris(t,1),:);
 				y2 = Ys(Tris(t,2),:);
-				[gs,Ks,Kss]=gKSArea(y1,y2,face.Centre);
+				if length(Tris) == 3
+					y3 = Ys(Tris(t+1,2),:);
+					n3 = Cell.globalIds(Tris(t+1,2));
+				else
+					y3 = Cell.Faces(f).Centre;
+					n3 = Cell.Faces(f).globalIds;
+				end
+				[gs,Ks,Kss]=gKSArea(y1,y2,y3);
 				gs=Lambda*gs;
-				nY = [Cell.globalIds(Tris(t,:))', face.globalIds];
+				nY = [Cell.globalIds(Tris(t,:))', n3];
             	ge=Assembleg(ge,gs,nY);
 				Ks=fact*Lambda*(Ks+Kss);
 				K = AssembleK(K,Ks,nY);
+				if length(Tris) == 3
+					break
+				end
             end
         end
 		g=g+ge*fact;

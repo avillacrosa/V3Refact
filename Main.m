@@ -26,7 +26,7 @@ t=0;
 tr=0;
 numStep=1;
 
-PostProcessingVTK(Geo, Set, numStep)
+% PostProcessingVTK(Geo, Set, numStep)
 while t<=Set.tend
 
     if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
@@ -37,11 +37,11 @@ while t<=Set.tend
     [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set);
 	[g,K] = KgGlobal(Geo, Geo, Set); % TODO FIXME, Isn't this bad btw ?
     
-	[Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Dofs, Set, K, g, numStep, t);
+	[Geo, g, K, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo, Dofs, Set, K, g, numStep, t);
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) && Set.nu/Set.nu0 == 1
         t=t+Set.dt;
         numStep=numStep+1;
-        PostProcessingVTK(Geo, Set, numStep)
+%         PostProcessingVTK(Geo, Set, numStep)
     else 
         fprintf('Convergence was not achieved ... \n');
         Y=Yp;

@@ -46,6 +46,8 @@ function [Geo] = flip23(Geo, Dofs, Set)
 			end
 			% TODO FIXME, CheckConvexityCondition check to add
 			fprintf('=>> 23 Flip.\n');
+			% TODO FIXME IMPORTANT. X's are not updated in this current 
+			% version, and so Ynew is slightly different...
         	Ynew=PerformFlip23(Ys(edgeToChange,:),Geo,n3);
         	Ynew(ghostNodes,:)=[];
 			% ========== YNEW TNEW THE SAME UP TO HERE =============
@@ -61,7 +63,9 @@ function [Geo] = flip23(Geo, Dofs, Set)
 			% or by variable renaming is enough ??
 			Geo.Cells(Face.ij(2)).Y(jrem,:) = [];
 			Geo.Cells(Face.ij(2)).T(jrem,:) = [];
-			
+% 			Geo = Rebuild(Geo);
+% 			PostProcessingVTK(Geo, Set, -1)
+
 			% TODO FIXME as in Function addNewVerticesInRemodelling
 			% Should probably include it there at some point...
 
@@ -73,40 +77,38 @@ function [Geo] = flip23(Geo, Dofs, Set)
 			Geo.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
 			Geo.Cells(Face.ij(2)).T(end+1:end+length(jidxs),:) = Tnew(jidxs,:);
 			Geo.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
+			
+% 			TODO FIXME, replacing is probably enough?
+% 			Geo.Cells(c).T(end+1:end+size(TNew,1),:) = Tnew;
+% 			Geo.Cells(c).Y(end+1:end+size(YNew,1),:) = Ynew;
+% 			Geo.Cells(Face.ij(2)).T(end+1:end+size(TNew,1),:) = Tnew;
+% 			Geo.Cells(Face.ij(2)).Y(end+1:end+size(YNew,1),:) = Ynew;
 
             if length(Ynew) ==3
                 fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),length(Geo.Cells(c).Y)+1:length(Geo.Cells(c).Y)+size(Ynew,1));
             elseif length(Ynew) ==2
                 fprintf('Vertices number %i %i -> were replaced by -> %i %i.\n',edgeToChange(1),edgeToChange(2),length(Geo.Cells(c).Y)+1:length(Geo.Cells(c).Y)+size(Ynew,1));
             end 
-			% TODO FIXME, RebuildCells, pretty sure this can be done in a 
-			% cleaner and smarter way.
+
             % TODO FIXME, this can probablye done with only the 2
             % implicated cells, and then recalculate global Ids after all
             % flips are performed ???
 %             PostProcessingVTK(Geo, Set, -1)
-            for cc = 1:Geo.nCells
-                Cell = Geo.Cells(cc);
-		        Neigh_nodes = unique(Geo.Cells(cc).T);
-		        Neigh_nodes(Neigh_nodes==cc)=[];
-                for j  = 1:length(Neigh_nodes)
-			        cj    = Neigh_nodes(j);
-                    ij			= [cc, cj];
-	                face_ids	= sum(ismember(Cell.T,ij),2)==2; 
-                    Geo.Cells(cc).Faces(j).Tris	= BuildEdges(Cell.T, face_ids, Cell.Faces(j).Centre, Cell.X, Cell.Y);
-                end
-                Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));
-                Geo.Cells(cc).Vol   = ComputeCellVolume(Geo.Cells(cc));
-            end
+			Geo = Rebuild(Geo);
+			PostProcessingVTK(Geo, Set, -2)
 	        Geo = BuildGlobalIds(Geo);
-
+			
+			% TODO FIXME, I don't like this. Possible way is to take only 
+			% DOFs when computing K and g ?
+			Geo.AssembleNodes = unique(Tnew);
             DofsR = Dofs;
             DofsR.Free = Geo.Cells(c).globalIds(end-length(cidxs):end,:);
             DofsR.Free = 3.*(kron(DofsR.Free',[1 1 1])-1)+kron(ones(1,length(DofsR.Free')),[1 2 3]);
-            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo, Dofs, Set);
+			[g,K]=KgGlobal(Geo, Geo, Set);
+            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo, DofsR, Set);
             PostProcessingVTK(Geo, Set, -1)
             return
-            %=========== UP UNTIL HERE WE SHOULD BE HAVE TO BE OK =========
+            
 
             % TODO FIXME also update DOFS?
 		end

@@ -22,11 +22,21 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
             for t=1:length(Tris)
 				y1 = Ys(Tris(t,1),:);
 				y2 = Ys(Tris(t,2),:);
-				[gs,Ks]=gKDet(y1, y2, Cell.Faces(f).Centre); % gs is equal everytime
-				nY = [Cell.globalIds(Tris(t,:))', Cell.Faces(f).globalIds];
+				if length(Tris) == 3
+					y3 = Ys(Tris(t+1,2),:);
+					n3 = Cell.globalIds(Tris(t+1,2));
+				else
+					y3 = Cell.Faces(f).Centre;
+					n3 = Cell.Faces(f).globalIds;
+				end
+				[gs,Ks]=gKDet(y1, y2, y3); % gs is equal everytime
+				nY = [Cell.globalIds(Tris(t,:))', n3];
 				ge=Assembleg(ge,gs,nY); % but this assembly is fucked, only for the 3rd cell?
 				K = AssembleK(K,Ks*fact/6,nY);
 				ntris = ntris + 1;
+				if length(Tris) == 3
+					break
+				end
             end
 %             if c == 3
 %                 disp(norm(ge));

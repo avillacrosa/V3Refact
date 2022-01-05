@@ -7,6 +7,8 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Dofs, Set, K
 	Set.iter=1;
     Geo = Geo_n;
     dof = Dofs.Free;
+	ig = 1;
+	gr0=gr;
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     	dy(dof)=-K(dof,dof)\g(dof);
 		% TODO FIXME ADD...
@@ -23,6 +25,19 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Dofs, Set, K
     	dyr=norm(dy(dof)); gr=norm(g(dof));
     	fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
     	Set.iter=Set.iter+1;
+		auxgr(ig+1)=gr;
+		% TODO FIXME, what even is this ?!
+    	if ig ==2
+        	ig=0;
+    	else
+        	ig=ig+1;
+    	end
+    	if (abs(auxgr(1)-auxgr(2))/auxgr(1)<1e-3 &&...
+            	abs(auxgr(1)-auxgr(3))/auxgr(1)<1e-3 &&...
+            	abs(auxgr(3)-auxgr(2))/auxgr(3)<1e-3)...
+            	|| abs((gr0-gr)./gr0)>1e3
+        	Set.iter=Set.MaxIter;
+    	end
 	end
 end
 

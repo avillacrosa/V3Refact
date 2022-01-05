@@ -54,4 +54,6 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
         Geo.Cells(c).Vol0  = Geo.Cells(c).Vol;
 	end
 	Geo = BuildGlobalIds(Geo);
+	% TODO FIXME bad
+	Geo.AssembleNodes = 1:Geo.nCells;
 end

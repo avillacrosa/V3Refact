@@ -1,2 +1,2 @@
-a = [1, 2 ,3 ]
-a(1,5 )
+load("flipwp.mat")
+flip23(Geo,Dofs,Set)
