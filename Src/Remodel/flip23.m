@@ -95,18 +95,22 @@ function [Geo] = flip23(Geo, Dofs, Set)
             % flips are performed ???
 %             PostProcessingVTK(Geo, Set, -1)
 			Geo = Rebuild(Geo);
-			PostProcessingVTK(Geo, Set, -2)
+% 			PostProcessingVTK(Geo, Set, -2)
 	        Geo = BuildGlobalIds(Geo);
 			
 			% TODO FIXME, I don't like this. Possible way is to take only 
 			% DOFs when computing K and g ?
 			Geo.AssembleNodes = unique(Tnew);
+			
             DofsR = Dofs;
+			
             DofsR.Free = Geo.Cells(c).globalIds(end-length(cidxs):end,:);
             DofsR.Free = 3.*(kron(DofsR.Free',[1 1 1])-1)+kron(ones(1,length(DofsR.Free')),[1 2 3]);
-			[g,K]=KgGlobal(Geo, Geo, Set);
+			Geo.AssemblegIds  = unique([Geo.Cells(c).globalIds(end-length(cidxs)+1:end,:); Geo.Cells(Face.ij(2)).globalIds(end-length(jidxs)+1:end,:)], 'rows');
+			Geo.Remodelling = true;
             [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo, DofsR, Set);
-            PostProcessingVTK(Geo, Set, -1)
+			Geo.Remodelling = false;
+
             return
             
 

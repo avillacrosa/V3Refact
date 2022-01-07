@@ -5,6 +5,11 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 	Set.lambdaS1 = 1;
 	Set.lambdaS2 = 0.8;
 	for c = 1:Geo.nCells
+		if Geo.Remodelling
+			if ~ismember(c,Geo.AssembleNodes)
+        		continue
+			end
+		end
 		Cell  = Geo.Cells(c);
 		Ys    = Geo.Cells(c).Y;
 		ge	  = zeros(size(g, 1), 1);
@@ -47,9 +52,14 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 					y3 = Cell.Faces(f).Centre;
 					n3 = Cell.Faces(f).globalIds;
 				end
+				nY = [Cell.globalIds(Tris(t,:))', n3];
+				if Geo.Remodelling
+					if ~any(ismember(nY,Geo.AssemblegIds))
+                		continue
+					end
+				end
 				[gs,Ks,Kss]=gKSArea(y1,y2,y3);
 				gs=Lambda*gs;
-				nY = [Cell.globalIds(Tris(t,:))', n3];
             	ge=Assembleg(ge,gs,nY);
 				Ks=fact*Lambda*(Ks+Kss);
 				K = AssembleK(K,Ks,nY);

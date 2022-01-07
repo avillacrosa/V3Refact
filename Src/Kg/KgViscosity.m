@@ -5,6 +5,9 @@ function [g,K,EnergyF]=KgViscosity(Geo_n, Geo, Set)
 	dY = zeros(Geo.numF+Geo.numY,3);
 	% TODO FIXME BAD!
 	for c = 1:Geo.nCells
+		if ~ismember(c,Geo.AssembleNodes)
+        	continue
+		end
 		Cell = Geo.Cells(c);
 		Cell_n = Geo_n.Cells(c);
 		dY(Cell.globalIds,:) = (Cell.Y-Cell_n.Y);

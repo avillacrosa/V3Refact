@@ -10,6 +10,11 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 	% TODO FIXME hard code
 	Set.lambdaV = 5;
 	for c=1:Geo.nCells
+		if Geo.Remodelling
+			if ~ismember(c,Geo.AssembleNodes)
+        		continue
+			end
+		end
 		Cell = Geo.Cells(c);
 		Ys = Cell.Y;
     	lambdaV=Set.lambdaV;
@@ -21,6 +26,9 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 			Tris = Cell.Faces(f).Tris;
             for t=1:length(Tris)
 				y1 = Ys(Tris(t,1),:);
+%                 if c == 2 && f == 2 && t == 1
+%                     1 == 1;
+%                 end
 				y2 = Ys(Tris(t,2),:);
 				if length(Tris) == 3
 					y3 = Ys(Tris(t+1,2),:);
@@ -29,9 +37,15 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 					y3 = Cell.Faces(f).Centre;
 					n3 = Cell.Faces(f).globalIds;
 				end
-				[gs,Ks]=gKDet(y1, y2, y3); % gs is equal everytime
 				nY = [Cell.globalIds(Tris(t,:))', n3];
+				if Geo.Remodelling
+					if ~any(ismember(nY,Geo.AssemblegIds))
+                		continue
+					end
+				end
+				[gs,Ks]=gKDet(y1, y2, y3); % gs is equal everytime
 				ge=Assembleg(ge,gs,nY); % but this assembly is fucked, only for the 3rd cell?
+%                 fprintf("%d %d %d %d\n", norm(ge), c, f, t);
 				K = AssembleK(K,Ks*fact/6,nY);
 				ntris = ntris + 1;
 				if length(Tris) == 3

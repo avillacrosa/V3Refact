@@ -5,6 +5,11 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 	[g, K] = initializeKg(Geo, Set);
 	EnergyB = 0;
 	for c=1:Geo.nCells
+		if Geo.Remodelling
+			if ~ismember(c,Geo.AssembleNodes)
+        		continue
+			end
+		end
 		Cell = Geo.Cells(c);
 		Ys = Cell.Y;
 		lambdaB=Set.lambdaB;
@@ -24,8 +29,13 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 					y3 = Cell.Faces(f).Centre;
 					n3 = Cell.Faces(f).globalIds;
 				end
-                [gs,Ks,Kss]=gKSArea(y1,y2,y3);
 				nY = [Cell.globalIds(Tris(t,:))', n3];
+				if Geo.Remodelling
+					if ~any(ismember(nY,Geo.AssemblegIds))
+                		continue
+					end
+				end
+                [gs,Ks,Kss]=gKSArea(y1,y2,y3);
 	        	g=Assembleg(g,gs*fact,nY);	
 				Ks=(gs)*(gs')*fact2+Ks*fact+Kss*fact;
 				K= AssembleK(K,Ks,nY);

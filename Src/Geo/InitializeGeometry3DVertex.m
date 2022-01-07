@@ -33,7 +33,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).T     = Twg(any(ismember(Twg,c),2),:);
 	end
 
-	for c = 1:length(X)
+	for c = 1:Geo.nCells
 		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, ...
 													Geo.XgID, Set);
 	end
@@ -56,4 +56,13 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	Geo = BuildGlobalIds(Geo);
 	% TODO FIXME bad
 	Geo.AssembleNodes = 1:Geo.nCells;
+    Set.BarrierTri0=realmax; 
+    for c = 1:Geo.nCells
+        Cell = Geo.Cells(c);
+        for f = 1:length(Geo.Cells(c).Faces)
+            Face = Cell.Faces(f);
+            Set.BarrierTri0=min([Face.TrisArea; Set.BarrierTri0]);
+        end
+    end
+    Set.BarrierTri0=Set.BarrierTri0/10;
 end
