@@ -12,6 +12,10 @@ function [Dofs]=GetDOFs(Geo, Set)
         gIDsY = Geo.Cells(c).globalIds;
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Geo.Cells(c).Faces(f);
+            if length(Face.Tris) == 3
+                fprintf("Triangle...\n");
+                continue
+            end
             if Face.Centre(2) < Set.VFixd
                 gconstrained(dim*(Face.globalIds-1)+1:dim*Face.globalIds) = 1;
             elseif Face.Centre(2) > Set.VPrescribed

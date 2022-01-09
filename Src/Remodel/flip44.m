@@ -1,4 +1,4 @@
-function [Geo] = flip44(Geo, Dofs, Set)
+function [Geo_n, Geo, Dofs] = flip44(Geo_n, Geo, Dofs, Set)
     % flip44 Summary of this function goes here
     %   Detailed explanation goes here
     %% loop over 4-vertices-faces (Flip44)
@@ -9,8 +9,7 @@ function [Geo] = flip44(Geo, Dofs, Set)
 		    Ts = Geo.Cells(c).T;
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
-			[~,idVertex]=max(nrgs);
-            if max(nrgs)<Set.RemodelTol
+            if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4
                 continue
 			end
 			oV=unique(Geo.Cells(c).Faces(f).Tris);
@@ -35,81 +34,52 @@ function [Geo] = flip44(Geo, Dofs, Set)
         	Tnew4=Ts(oV(4),:);       Tnew4(ismember(Tnew4,NX(2)))=NZ(~ismember(NZ,Tnew4));
         	Tnew=[Tnew1;Tnew2;Tnew3;Tnew4];
 			Ynew=Flip44(Ys(oV,:),Tnew,L,Geo);
+
+            targetVerts = Geo.Cells(c).Y(oV,:);
+			CellJ = Geo.Cells(Face.ij(2));
+			jrem = find(sum(ismember(CellJ.Y,targetVerts),2)==3);
+			% TODO FIXME As in Function removeFaceinRemodelling. 
+			% Should probably include it there at some point...
+			Geo.Cells(c).Y(oV,:) = [];
+            Geo_n.Cells(c).Y(oV,:) = [];
+			Geo.Cells(c).T(oV,:) = [];
+
+			% TODO FIXME, is it necessary to make a full call to the object
+			% or by variable renaming is enough ??
+			Geo.Cells(Face.ij(2)).Y(jrem,:) = [];
+            Geo_n.Cells(Face.ij(2)).Y(jrem,:) = [];
+			Geo.Cells(Face.ij(2)).T(jrem,:) = [];
+
+            cidxs = find(sum(ismember(Tnew,c)==1,2));
+            jidxs = find(sum(ismember(Tnew,Face.ij(2))==1,2));
+
+			Geo.Cells(c).T(end+1:end+length(cidxs),:) = Tnew(cidxs,:);
+			Geo.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
+            Geo_n.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
+			Geo.Cells(Face.ij(2)).T(end+1:end+length(jidxs),:) = Tnew(jidxs,:);
+			Geo.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
+            Geo_n.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
+
+            Geo.Cells(c).Faces(f) = [];
+            Geo = Rebuild(Geo, Set);
+
+% 			PostProcessingVTK(Geo, Set, -2)
+	        Geo = BuildGlobalIds(Geo);
+
+			% TODO FIXME, I don't like this. Possible way is to take only 
+			% DOFs when computing K and g ?
+			Geo.AssembleNodes = unique(Tnew);
+			Dofs = GetDOFs(Geo, Set);
+            DofsR = Dofs;
+			
+            DofsR.Free = unique([Geo.Cells(c).globalIds(end-length(cidxs)+1:end,:); Geo.Cells(Face.ij(2)).globalIds(end-length(jidxs)+1:end,:)], 'rows');
+            Geo.AssemblegIds  = DofsR.Free;
+            DofsR.Free = 3.*(kron(DofsR.Free',[1 1 1])-1)+kron(ones(1,length(DofsR.Free')),[1 2 3]);
+			Geo.Remodelling = true;
+            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_n, Geo, DofsR, Set);
+            return
 		end
    end
-        % copy data
-        Cellp=Cell; Yp=Y; Ynp=Yn;  SCnp=SCn; Tp=T; Xp=X; Dofsp=Dofs; Setp=Set; Vnewp=Vnew;
-        fprintf('=>> 44 Flip.\n');
-        oV=Cell.AllFaces.Vertices{i};
-        
-        side=[1 2;
-            2 3;
-            3 4;
-            1 4];
-        
-        % The new connectivity
-        % Faces Edges
-        L(1)=norm(Y.DataRow(oV(1),:)-Y.DataRow(oV(2),:));
-        L(2)=norm(Y.DataRow(oV(2),:)-Y.DataRow(oV(3),:));
-        L(3)=norm(Y.DataRow(oV(3),:)-Y.DataRow(oV(4),:));
-        L(4)=norm(Y.DataRow(oV(1),:)-Y.DataRow(oV(4),:));
-        [~,Jun]=min(L);
-        VJ=oV(side(Jun,:));
-        cVJ3=intersect(T.DataRow(VJ(1),:),T.DataRow(VJ(2),:));
-        N=unique(T.DataRow(VJ,:)); % all nodes
-        NZ=N(~ismember(N,cVJ3));
-        NX=Cell.AllFaces.Nodes(i,:);
-        Tnew1=T.DataRow(oV(1),:);       Tnew1(ismember(Tnew1,NX(1)))=NZ(~ismember(NZ,Tnew1));
-        Tnew2=T.DataRow(oV(2),:);       Tnew2(ismember(Tnew2,NX(2)))=NZ(~ismember(NZ,Tnew2));
-        Tnew3=T.DataRow(oV(3),:);       Tnew3(ismember(Tnew3,NX(1)))=NZ(~ismember(NZ,Tnew3));
-        Tnew4=T.DataRow(oV(4),:);       Tnew4(ismember(Tnew4,NX(2)))=NZ(~ismember(NZ,Tnew4));
-        Tnew=[Tnew1;Tnew2;Tnew3;Tnew4];
-        
-        % Check Convexity Condition
-        % Changed by Adria. Missing input variable X
-        [IsNotConvex,~]=CheckConvexityCondition(Tnew,T,X);
-        if IsNotConvex
-            fprintf('=>> 44-Flip is is not compatible rejected.\n');
-            continue
-        end
-        
-        % The new vertices
-        Ynew=Flip44(Y.DataRow(oV,:),Tnew,L,X);
-        
-        % Remove the face
-        [T, Y, Yn, SCn, Cell] = removeFaceInRemodelling(T, Y, Yn, SCn, Cell, oV, i);
-        
-        % add new vertices 
-        [T, Y, Yn, Cell, nV, Vnew, nC, SCn, Set, flag] = addNewVerticesInRemodelling(T, Tnew, Y, Ynew, Yn, Cell, Vnew, X, SCn, XgID, Set);
-      
-        if ~flag
-            fprintf('Vertices number %i %i %i %i -> were replaced by -> %i %i %i %i.\n',oV(1),oV(2),oV(3),oV(4),nV(1),nV(2),nV(3),nV(4));
-            if ~isnan(Set.BC)
-                [Dofs] = GetDOFs(Y,Cell,Set, isempty(Set.InputSegmentedImage) == 0);
-            else
-                [Dofs]=GetDOFsSubsrtate(Y,Cell,Set);
-            end
-            [Dofs] = updateRemodelingDOFs(Dofs, nV, nC, Y);
-            
-            Cell.RemodelledVertices=[nV; nC+Y.n];
-            
-            % Changed by Adria. As in flip23, SolveRemodellingStep has
-            % inconsistent input variables
-    %         [Cell,Y,Yn,SCn,X,Dofs,Set,~,DidNotConverge]=SolveRemodelingStep(Cell,Y0,Y,X,Dofs,Set,Yn,SCn,CellInput);
-            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo, DofsR, Set);
-            Yn.DataRow(nV,:)=Y.DataRow(nV,:);
-        else
-            error('check Flip44 flag');
-        end
-        
-        if  DidNotConverge || flag %|| NotConvexCell(Cell,Y)
-            [Cell, Y, Yn, SCn, T, X, Dofs, Set, Vnew] = backToPreviousStep(Cellp, Yp, Ynp, SCnp, Tp, Xp, Dofsp, Setp, Vnewp);
-            fprintf('=>> Local problem did not converge -> 44 Flip rejected !! \n');
-            Set.N_Rejected_Transfromation=Set.N_Rejected_Transfromation+1;
-        else
-            Set.N_Accepted_Transfromation=Set.N_Accepted_Transfromation+1;
-        end
-    end
 end
 
 %%
@@ -118,10 +88,22 @@ function Yn=Flip44(Y,Tnew,L,Geo)
 	% L=mean(L)/2;
 	L=mean(L);
 	
-	c1=sum(Geo.X(Tnew(1,:),:),1)./4;
-	c2=sum(Geo.X(Tnew(2,:),:),1)./4;
-	c3=sum(Geo.X(Tnew(3,:),:),1)./4;
-	c4=sum(Geo.X(Tnew(4,:),:),1)./4;
+    % TODO FIXME, other way for this???
+    c1 = zeros(3,1);
+    c2 = zeros(3,1);
+    c3 = zeros(3,1);
+    c4 = zeros(3,1);
+    for t = 1:size(Tnew,2)
+        c1=c1 + (Geo.Cells(Tnew(1,t)).X)./4;
+        c2=c2 + (Geo.Cells(Tnew(2,t)).X)./4;
+        c3=c3 + (Geo.Cells(Tnew(3,t)).X)./4;
+        c4=c4 + (Geo.Cells(Tnew(4,t)    ).X)./4;
+    end
+
+% 	c1=sum(Geo.Cells(Tnew(1,:),:).X,1)./4;
+% 	c2=sum(Geo.Cells(Tnew(2,:),:).X,1)./4;
+% 	c3=sum(Geo.Cells(Tnew(3,:),:).X,1)./4;
+% 	c4=sum(Geo.Cells(Tnew(4,:),:).X,1)./4;
 	Lc1=c1-center; Lc1=Lc1/norm(Lc1);
 	Lc2=c2-center; Lc2=Lc2/norm(Lc2);
 	Lc3=c3-center; Lc3=Lc3/norm(Lc3);

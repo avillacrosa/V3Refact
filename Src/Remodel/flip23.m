@@ -1,4 +1,4 @@
-function [Geo] = flip23(Geo, Dofs, Set)
+function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
 %FLIP23 Perform flip 2-3 operation, when the edge is short
 %   Involves replacing the edge pq as it shorten to zero length by the new 
 %   triangle ghf that is shared between cell A and B (A has been displaced 
@@ -22,7 +22,6 @@ function [Geo] = flip23(Geo, Dofs, Set)
             if max(nrgs)<Set.RemodelTol
                 continue
             end
-            fprintf("FLIPPING BURGERS!!! \n");
 			edgeToChange = Face.Tris(idVertex,:);
 		    n3=Ts(edgeToChange(1),  ismember(Ts(edgeToChange(1),:), Ts(edgeToChange(2),:)));
     		n1=Ts(edgeToChange(1), ~ismember(Ts(edgeToChange(1),:),n3));
@@ -50,6 +49,8 @@ function [Geo] = flip23(Geo, Dofs, Set)
 			% version, and so Ynew is slightly different...
         	Ynew=PerformFlip23(Ys(edgeToChange,:),Geo,n3);
         	Ynew(ghostNodes,:)=[];
+
+
 			% ========== YNEW TNEW THE SAME UP TO HERE =============
 			targetVerts = Geo.Cells(c).Y(edgeToChange,:);
 			CellJ = Geo.Cells(Face.ij(2));
@@ -57,33 +58,30 @@ function [Geo] = flip23(Geo, Dofs, Set)
 			% TODO FIXME As in Function removeFaceinRemodelling. 
 			% Should probably include it there at some point...
 			Geo.Cells(c).Y(edgeToChange,:) = [];
+            Geo_n.Cells(c).Y(edgeToChange,:) = [];
 			Geo.Cells(c).T(edgeToChange,:) = [];
 
 			% TODO FIXME, is it necessary to make a full call to the object
 			% or by variable renaming is enough ??
 			Geo.Cells(Face.ij(2)).Y(jrem,:) = [];
+            Geo_n.Cells(Face.ij(2)).Y(jrem,:) = [];
 			Geo.Cells(Face.ij(2)).T(jrem,:) = [];
 % 			Geo = Rebuild(Geo);
 % 			PostProcessingVTK(Geo, Set, -1)
 
 			% TODO FIXME as in Function addNewVerticesInRemodelling
 			% Should probably include it there at some point...
-
             % TODO FIXME bad...
             cidxs = find(sum(ismember(Tnew,c)==1,2));
             jidxs = find(sum(ismember(Tnew,Face.ij(2))==1,2));
 
 			Geo.Cells(c).T(end+1:end+length(cidxs),:) = Tnew(cidxs,:);
 			Geo.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
+            Geo_n.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
 			Geo.Cells(Face.ij(2)).T(end+1:end+length(jidxs),:) = Tnew(jidxs,:);
 			Geo.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
+            Geo_n.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
 			
-% 			TODO FIXME, replacing is probably enough?
-% 			Geo.Cells(c).T(end+1:end+size(TNew,1),:) = Tnew;
-% 			Geo.Cells(c).Y(end+1:end+size(YNew,1),:) = Ynew;
-% 			Geo.Cells(Face.ij(2)).T(end+1:end+size(TNew,1),:) = Tnew;
-% 			Geo.Cells(Face.ij(2)).Y(end+1:end+size(YNew,1),:) = Ynew;
-
             if length(Ynew) ==3
                 fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),length(Geo.Cells(c).Y)+1:length(Geo.Cells(c).Y)+size(Ynew,1));
             elseif length(Ynew) ==2
@@ -94,26 +92,25 @@ function [Geo] = flip23(Geo, Dofs, Set)
             % implicated cells, and then recalculate global Ids after all
             % flips are performed ???
 %             PostProcessingVTK(Geo, Set, -1)
-			Geo = Rebuild(Geo);
+			Geo = Rebuild(Geo, Set);
+
 % 			PostProcessingVTK(Geo, Set, -2)
 	        Geo = BuildGlobalIds(Geo);
-			
+
 			% TODO FIXME, I don't like this. Possible way is to take only 
 			% DOFs when computing K and g ?
 			Geo.AssembleNodes = unique(Tnew);
-			
+			Dofs = GetDOFs(Geo, Set);
             DofsR = Dofs;
 			
-            DofsR.Free = Geo.Cells(c).globalIds(end-length(cidxs):end,:);
+            DofsR.Free = unique([Geo.Cells(c).globalIds(end-length(cidxs)+1:end,:); Geo.Cells(Face.ij(2)).globalIds(end-length(jidxs)+1:end,:)], 'rows');
+            Geo.AssemblegIds  = DofsR.Free;
             DofsR.Free = 3.*(kron(DofsR.Free',[1 1 1])-1)+kron(ones(1,length(DofsR.Free')),[1 2 3]);
-			Geo.AssemblegIds  = unique([Geo.Cells(c).globalIds(end-length(cidxs)+1:end,:); Geo.Cells(Face.ij(2)).globalIds(end-length(jidxs)+1:end,:)], 'rows');
 			Geo.Remodelling = true;
-            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo, DofsR, Set);
+            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_n, Geo, DofsR, Set);
 			Geo.Remodelling = false;
 
             return
-            
-
             % TODO FIXME also update DOFS?
 		end
 	end

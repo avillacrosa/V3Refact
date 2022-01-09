@@ -1,12 +1,13 @@
-function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Dofs, Set, K, g, numStep, t)
+function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t)
 	% TODO FIXME Add dofs
-	dy=zeros((Geo_n.numY+Geo_n.numF)*3, 1);
-	dyr=norm(dy); gr=norm(g);
+	dy=zeros((Geo.numY+Geo.numF)*3, 1);
+	dyr=norm(dy(Dofs.Free)); gr=norm(g(Dofs.Free));
 	fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
 	Energy = 0;
 	Set.iter=1;
-    Geo = Geo_n;
     dof = Dofs.Free;
+    auxgr=zeros(3,1);
+    auxgr(1)=gr;
 	ig = 1;
 	gr0=gr;
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter

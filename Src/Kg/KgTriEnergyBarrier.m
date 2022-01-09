@@ -32,7 +32,11 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 				nY = [Cell.globalIds(Tris(t,:))', n3];
 				if Geo.Remodelling
 					if ~any(ismember(nY,Geo.AssemblegIds))
-                		continue
+                        if length(Tris) == 3
+                            break
+                        else
+                		    continue
+                        end
 					end
 				end
                 [gs,Ks,Kss]=gKSArea(y1,y2,y3);

@@ -5,8 +5,11 @@ function [g,K,EnergyF]=KgViscosity(Geo_n, Geo, Set)
 	dY = zeros(Geo.numF+Geo.numY,3);
 	% TODO FIXME BAD!
 	for c = 1:Geo.nCells
-		if ~ismember(c,Geo.AssembleNodes)
-        	continue
+        % THERE WAS A HARD TO DEBUG ERROR HERE... 
+		if Geo.Remodelling
+			if ~ismember(c,Geo.AssembleNodes)
+        		continue
+			end
 		end
 		Cell = Geo.Cells(c);
 		Cell_n = Geo_n.Cells(c);
@@ -14,7 +17,9 @@ function [g,K,EnergyF]=KgViscosity(Geo_n, Geo, Set)
 		for f = 1:length(Cell.Faces)
 			Face = Cell.Faces(f);
 			Face_n = Cell_n.Faces(f);
-			dY(Face.globalIds,:) = (Face.Centre-Face_n.Centre);
+            if length(Face.Tris) ~= 3 && ~isstring(Face.Centre) && ~isstring(Face_n.Centre)
+			    dY(Face.globalIds,:) = (Face.Centre-Face_n.Centre);
+            end
 		end
 	end
 	g = (Set.nu/Set.dt).*reshape(dY', (Geo.numF+Geo.numY)*3, 1);

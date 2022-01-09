@@ -17,17 +17,24 @@ function CreateVtkCell(Geo, Set, Step)
 		header = header + "Delaunay_vtk\n";
 		header = header + "ASCII\n";
 		header = header + "DATASET UNSTRUCTURED_GRID\n";
+
 		% TODO FIXME, not good...
 		totTris = 0;
+        nTris = 0;
 		for ft = 1:length(Geo.Cells(c).Faces)
 			ntris = length(Geo.Cells(c).Faces(ft).Tris);
+            if ntris == 3
+                totTris = totTris + 1;
+                nTris = nTris + 1;
+                continue;
+            end
 			for t = 1:ntris
 				totTris = totTris + 1;
 			end
 		end
 
 		points = sprintf("POINTS %d float\n", ...
-					length(Ys)+length(Geo.Cells(c).Faces));
+					length(Ys)+length(Geo.Cells(c).Faces)-nTris);
 % 		points = sprintf("POINTS %d float\n", ...
 % 					length(Ys)+1);		
 		for yi = 1:length(Ys)
@@ -38,14 +45,22 @@ function CreateVtkCell(Geo, Set, Step)
 		
 		cells  = sprintf("CELLS %d %d\n",totTris,4*totTris);
 		for f = 1:length(Geo.Cells(c).Faces)
+            
 			face = Geo.Cells(c).Faces(f);
-			points = points + sprintf(" %.8f %.8f %.8f\n",...
-								   face.Centre(1),face.Centre(2),face.Centre(3));
-			for t = 1:length(face.Tris)
-				cells    = cells + sprintf("3 %d %d %d\n",...
-										face.Tris(t,1)-1, face.Tris(t,2)-1, f+length(Ys)-1);
+            if length(Geo.Cells(c).Faces(f).Tris)~=3
+			    points = points + sprintf(" %.8f %.8f %.8f\n",...
+								       face.Centre(1),face.Centre(2),face.Centre(3));
 
-			end
+			    for t = 1:length(face.Tris)
+				    cells    = cells + sprintf("3 %d %d %d\n",...
+										    face.Tris(t,1)-1, face.Tris(t,2)-1, f+length(Ys)-1);
+    
+			    end
+            else
+				    cells    = cells + sprintf("3 %d %d %d\n",...
+						face.Tris(1,1)-1, face.Tris(1,2)-1, face.Tris(2,2)-1);
+
+            end
 			
 		end
 		

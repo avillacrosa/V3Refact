@@ -42,7 +42,6 @@ function Geo = BuildGlobalIds(Geo)
             if length(Geo.Cells(ci).Faces(f).Tris) ~= 3
                 Geo.Cells(ci).Faces(f).globalIds = gIdsf(f)-ntris;
             else
-                Geo.Cells(ci).Faces(f).globalIds = "pls";
                 ntris = ntris + 1;
             end
         end

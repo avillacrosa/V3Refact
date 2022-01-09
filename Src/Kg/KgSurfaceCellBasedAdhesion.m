@@ -32,7 +32,7 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
         for f=1:length(Cell.Faces)
 			face = Cell.Faces(f);
 			Tris=Cell.Faces(f).Tris;
-			if face.InterfaceType==0
+            if face.InterfaceType==0
 				% TODO FIXME ADAPT THIS
 				Lambda=Set.lambdaS1*1;
 			elseif face.InterfaceType==1
@@ -51,11 +51,15 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 				else
 					y3 = Cell.Faces(f).Centre;
 					n3 = Cell.Faces(f).globalIds;
-				end
+                end
 				nY = [Cell.globalIds(Tris(t,:))', n3];
 				if Geo.Remodelling
 					if ~any(ismember(nY,Geo.AssemblegIds))
-                		continue
+                        if length(Tris) == 3
+                            break
+                        else
+                		    continue
+                        end
 					end
 				end
 				[gs,Ks,Kss]=gKSArea(y1,y2,y3);
@@ -63,6 +67,7 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
             	ge=Assembleg(ge,gs,nY);
 				Ks=fact*Lambda*(Ks+Kss);
 				K = AssembleK(K,Ks,nY);
+%                 fprintf("%.12f  %.12f %.12f %d %d %d\n", norm(K), norm(y3), fact, c, f, t);          
 				if length(Tris) == 3
 					break
 				end

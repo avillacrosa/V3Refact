@@ -39,4 +39,5 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	g = gs + gv + gf + gB;
 	K = Ks + Kv + Kf + KB;
 	E = ES + EV + EN + EB;
+%     fprintf("%.12f %.12f %.12f %.12f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
 end

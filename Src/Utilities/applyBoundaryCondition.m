@@ -14,6 +14,9 @@ function [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set)
             for gn = 1:length(numP)
                 for f = 1:length(Geo.Cells(c).Faces)
                     Face = Geo.Cells(c).Faces(f);
+                    if length(Face.Tris)==3
+                        continue
+                    end
                     if numP(gn)==Face.globalIds
                         Geo.Cells(c).Faces(f).Centre(2) = Geo.Cells(c).Faces(f).Centre(2) + Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
                     end
