@@ -12,7 +12,9 @@ function [Geo_n, Geo, Dofs] = flip44(Geo_n, Geo, Dofs, Set)
             if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4
                 continue
 			end
-			oV=unique(Geo.Cells(c).Faces(f).Tris);
+% 			oV=[Face.Tris(3,1); Face.Tris(2,1); Face.Tris(1,1); Face.Tris(4,1)];
+			oV=[Face.Tris(1,1); Face.Tris(2,1); Face.Tris(3,1); Face.Tris(4,1)];
+
 			fprintf('=>> 44 Flip.\n');
 			side=[1 2;
             	  2 3;
@@ -25,6 +27,7 @@ function [Geo_n, Geo, Dofs] = flip44(Geo_n, Geo, Dofs, Set)
 			[~,Jun]=min(L);
         	VJ=oV(side(Jun,:));
         	cVJ3=intersect(Ts(VJ(1),:),Ts(VJ(2),:));
+			% cVJ3 is equal
         	N=unique(Ts(VJ,:)); % all nodes
         	NZ=N(~ismember(N,cVJ3));
         	NX=Face.ij;
@@ -43,28 +46,45 @@ function [Geo_n, Geo, Dofs] = flip44(Geo_n, Geo, Dofs, Set)
 			Geo.Cells(c).Y(oV,:) = [];
             Geo_n.Cells(c).Y(oV,:) = [];
 			Geo.Cells(c).T(oV,:) = [];
+% 			Geo_n.Cells(c).T(oV,:) = [];
+
 
 			% TODO FIXME, is it necessary to make a full call to the object
 			% or by variable renaming is enough ??
 			Geo.Cells(Face.ij(2)).Y(jrem,:) = [];
             Geo_n.Cells(Face.ij(2)).Y(jrem,:) = [];
 			Geo.Cells(Face.ij(2)).T(jrem,:) = [];
+% 			Geo_n.Cells(Face.ij(2)).T(jrem,:) = [];
 
             cidxs = find(sum(ismember(Tnew,c)==1,2));
             jidxs = find(sum(ismember(Tnew,Face.ij(2))==1,2));
 
 			Geo.Cells(c).T(end+1:end+length(cidxs),:) = Tnew(cidxs,:);
+% 			Geo_n.Cells(c).T(end+1:end+length(cidxs),:) = Tnew(cidxs,:);
 			Geo.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
             Geo_n.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
 			Geo.Cells(Face.ij(2)).T(end+1:end+length(jidxs),:) = Tnew(jidxs,:);
+% 			Geo_n.Cells(Face.ij(2)).T(end+1:end+length(jidxs),:) = Tnew(jidxs,:);
 			Geo.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
             Geo_n.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
 
+			for f2 = 1:length(Geo.Cells(Face.ij(2)).Faces)
+				Faces2 = Geo.Cells(Face.ij(2)).Faces(f2);
+				if sum(ismember(Geo.Cells(c).Faces(f).ij, Faces2.ij))==2
+					oppfaceId = f2;
+				end
+			end
+
             Geo.Cells(c).Faces(f) = [];
+			Geo.Cells(Face.ij(2)).Faces(oppfaceId) = [];
+			Geo_n.Cells(c).Faces(f) = [];
+			Geo_n.Cells(Face.ij(2)).Faces(oppfaceId) = [];
             Geo = Rebuild(Geo, Set);
+% 			Geo_n = Rebuild(Geo_n, Set);
 
 % 			PostProcessingVTK(Geo, Set, -2)
 	        Geo = BuildGlobalIds(Geo);
+% 			Geo_n = BuildGlobalIds(Geo_n);
 
 			% TODO FIXME, I don't like this. Possible way is to take only 
 			% DOFs when computing K and g ?
@@ -77,6 +97,7 @@ function [Geo_n, Geo, Dofs] = flip44(Geo_n, Geo, Dofs, Set)
             DofsR.Free = 3.*(kron(DofsR.Free',[1 1 1])-1)+kron(ones(1,length(DofsR.Free')),[1 2 3]);
 			Geo.Remodelling = true;
             [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_n, Geo, DofsR, Set);
+			Geo.Remodelling = false;
             return
 		end
    end
@@ -89,15 +110,15 @@ function Yn=Flip44(Y,Tnew,L,Geo)
 	L=mean(L);
 	
     % TODO FIXME, other way for this???
-    c1 = zeros(3,1);
-    c2 = zeros(3,1);
-    c3 = zeros(3,1);
-    c4 = zeros(3,1);
+    c1 = zeros(1,3);
+    c2 = zeros(1,3);
+    c3 = zeros(1,3);
+    c4 = zeros(1,3);
     for t = 1:size(Tnew,2)
         c1=c1 + (Geo.Cells(Tnew(1,t)).X)./4;
         c2=c2 + (Geo.Cells(Tnew(2,t)).X)./4;
         c3=c3 + (Geo.Cells(Tnew(3,t)).X)./4;
-        c4=c4 + (Geo.Cells(Tnew(4,t)    ).X)./4;
+        c4=c4 + (Geo.Cells(Tnew(4,t)).X)./4;
     end
 
 % 	c1=sum(Geo.Cells(Tnew(1,:),:).X,1)./4;

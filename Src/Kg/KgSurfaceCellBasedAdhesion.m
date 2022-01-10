@@ -1,9 +1,6 @@
 function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 	[g, K] = initializeKg(Geo, Set);
 	EnergyS = 0;
-	% TODO FIXME BAD!
-	Set.lambdaS1 = 1;
-	Set.lambdaS2 = 0.8;
 	for c = 1:Geo.nCells
 		if Geo.Remodelling
 			if ~ismember(c,Geo.AssembleNodes)
@@ -65,9 +62,9 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 				[gs,Ks,Kss]=gKSArea(y1,y2,y3);
 				gs=Lambda*gs;
             	ge=Assembleg(ge,gs,nY);
+%                 fprintf("%d %d %d %d\n", norm(ge), c, f, t);
 				Ks=fact*Lambda*(Ks+Kss);
 				K = AssembleK(K,Ks,nY);
-%                 fprintf("%.12f  %.12f %.12f %d %d %d\n", norm(K), norm(y3), fact, c, f, t);          
 				if length(Tris) == 3
 					break
 				end

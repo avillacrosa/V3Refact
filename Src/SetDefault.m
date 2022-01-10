@@ -76,4 +76,5 @@ function Set = SetDefault(Set)
 	Set.nu0                         = Set.nu;
 	Set.dt0=Set.tend/Set.Nincr;
 	Set.dt=Set.dt0;
+	Set.MaxIter0					= Set.MaxIter;
 end

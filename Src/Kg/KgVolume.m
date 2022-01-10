@@ -49,7 +49,6 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 				end
 				[gs,Ks]=gKDet(y1, y2, y3); % gs is equal everytime
 				ge=Assembleg(ge,gs,nY); % but this assembly is fucked, only for the 3rd cell?
-%                 fprintf("%d %d %d %d\n", norm(ge), c, f, t);
 				K = AssembleK(K,Ks*fact/6,nY);
 				ntris = ntris + 1;
 				if length(Tris) == 3

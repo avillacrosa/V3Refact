@@ -37,6 +37,11 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
               		  n3([2 3]) n1 n2;
               		  n3([3 1]) n1 n2];       
 			end
+			
+		    if CheckSkinnyTriangles(Ys(edgeToChange(1),:),Ys(edgeToChange(2),:),Face.Centre)
+        		continue
+    		end
+
 			ghostNodes = ismember(Tnew,Geo.XgID);
     		ghostNodes = all(ghostNodes,2);
 			if any(ghostNodes)
@@ -50,37 +55,32 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
         	Ynew=PerformFlip23(Ys(edgeToChange,:),Geo,n3);
         	Ynew(ghostNodes,:)=[];
 
-
 			% ========== YNEW TNEW THE SAME UP TO HERE =============
-			targetVerts = Geo.Cells(c).Y(edgeToChange,:);
-			CellJ = Geo.Cells(Face.ij(2));
-			jrem = find(sum(ismember(CellJ.Y,targetVerts),2)==3);
+			targetTets = Geo.Cells(c).T(edgeToChange,:);
+
 			% TODO FIXME As in Function removeFaceinRemodelling. 
 			% Should probably include it there at some point...
-			Geo.Cells(c).Y(edgeToChange,:) = [];
-            Geo_n.Cells(c).Y(edgeToChange,:) = [];
-			Geo.Cells(c).T(edgeToChange,:) = [];
-
 			% TODO FIXME, is it necessary to make a full call to the object
 			% or by variable renaming is enough ??
-			Geo.Cells(Face.ij(2)).Y(jrem,:) = [];
-            Geo_n.Cells(Face.ij(2)).Y(jrem,:) = [];
-			Geo.Cells(Face.ij(2)).T(jrem,:) = [];
-% 			Geo = Rebuild(Geo);
-% 			PostProcessingVTK(Geo, Set, -1)
 
-			% TODO FIXME as in Function addNewVerticesInRemodelling
-			% Should probably include it there at some point...
-            % TODO FIXME bad...
-            cidxs = find(sum(ismember(Tnew,c)==1,2));
-            jidxs = find(sum(ismember(Tnew,Face.ij(2))==1,2));
-
-			Geo.Cells(c).T(end+1:end+length(cidxs),:) = Tnew(cidxs,:);
-			Geo.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
-            Geo_n.Cells(c).Y(end+1:end+length(cidxs),:) = Ynew(cidxs,:);
-			Geo.Cells(Face.ij(2)).T(end+1:end+length(jidxs),:) = Tnew(jidxs,:);
-			Geo.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
-            Geo_n.Cells(Face.ij(2)).Y(end+1:end+length(jidxs),:) = Ynew(jidxs,:);
+			targetNodes = unique(targetTets);
+			for n_i = 1:length(targetNodes)
+				tNode = targetNodes(n_i);
+				CellJ = Geo.Cells(tNode);
+				hits = find(sum(ismember(CellJ.T,targetTets),2)==4);
+				Geo.Cells(tNode).T(hits,:) = [];
+				Geo_n.Cells(tNode).T(hits,:) = [];
+				
+				news = find(sum(ismember(Tnew,tNode)==1,2));
+				Geo.Cells(tNode).T(end+1:end+length(news),:) = Tnew(news,:);
+				Geo_n.Cells(tNode).T(end+1:end+length(news),:) = Tnew(news,:);
+				if ~ismember(tNode, Geo.XgID)
+					Geo.Cells(tNode).Y(hits,:) = [];
+					Geo_n.Cells(tNode).Y(hits,:) = [];
+					Geo.Cells(tNode).Y(end+1:end+length(news),:) = Ynew(news,:);
+					Geo_n.Cells(tNode).Y(end+1:end+length(news),:) = Ynew(news,:);
+				end
+			end
 			
             if length(Ynew) ==3
                 fprintf('Vertices number %i %i -> were replaced by -> %i %i %i.\n',edgeToChange(1),edgeToChange(2),length(Geo.Cells(c).Y)+1:length(Geo.Cells(c).Y)+size(Ynew,1));
@@ -93,9 +93,12 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
             % flips are performed ???
 %             PostProcessingVTK(Geo, Set, -1)
 			Geo = Rebuild(Geo, Set);
+			Geo_n = Rebuild(Geo_n, Set);
+
 
 % 			PostProcessingVTK(Geo, Set, -2)
 	        Geo = BuildGlobalIds(Geo);
+			Geo_n = BuildGlobalIds(Geo_n);
 
 			% TODO FIXME, I don't like this. Possible way is to take only 
 			% DOFs when computing K and g ?
@@ -103,13 +106,20 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
 			Dofs = GetDOFs(Geo, Set);
             DofsR = Dofs;
 			
-            DofsR.Free = unique([Geo.Cells(c).globalIds(end-length(cidxs)+1:end,:); Geo.Cells(Face.ij(2)).globalIds(end-length(jidxs)+1:end,:)], 'rows');
+
+			% TODO FIXME THIS SHOULD ALSO BE CHANGED ACCORDINGLY!
+			remodelDofs = zeros(0,1);
+			for ccc = 1:Geo.nCells
+				news = find(sum(ismember(Tnew,ccc)==1,2));
+				remodelDofs(end+1:end+length(news)) = Geo.Cells(ccc).globalIds(end-length(news)+1:end,:);
+			end
+            DofsR.Free = unique(remodelDofs, 'rows');
             Geo.AssemblegIds  = DofsR.Free;
             DofsR.Free = 3.*(kron(DofsR.Free',[1 1 1])-1)+kron(ones(1,length(DofsR.Free')),[1 2 3]);
 			Geo.Remodelling = true;
             [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_n, Geo, DofsR, Set);
 			Geo.Remodelling = false;
-
+			PostProcessingVTK(Geo,Set,-11)
             return
             % TODO FIXME also update DOFS?
 		end

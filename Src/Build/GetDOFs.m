@@ -7,6 +7,7 @@ function [Dofs]=GetDOFs(Geo, Set)
     dim = 3;
     gconstrained = zeros((Geo.numY+Geo.numF)*3, 1);
     gprescribed  = zeros((Geo.numY+Geo.numF)*3, 1);
+
     for c = 1:Geo.nCells
         Y     = Geo.Cells(c).Y;
         gIDsY = Geo.Cells(c).globalIds;
@@ -33,8 +34,10 @@ function [Dofs]=GetDOFs(Geo, Set)
         end
         
         gprescribed(dim*(gIDsY(preY)-1)+2) = 1;
-        gconstrained(dim*(gIDsY(preY)-1)+1) = 1;
-        gconstrained(dim*(gIDsY(preY)-1)+3) = 1;
+		if Set.BC == 1 % TODO FIXME Do not constrain this in compress...
+        	gconstrained(dim*(gIDsY(preY)-1)+1) = 1;
+        	gconstrained(dim*(gIDsY(preY)-1)+3) = 1;
+		end
     end
     Dofs.Free = find(gconstrained==0 & gprescribed==0);
     Dofs.Fix  = [find(gconstrained); find(gprescribed)];

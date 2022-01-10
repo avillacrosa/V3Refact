@@ -1,4 +1,4 @@
-<deployment-project plugin="plugin.coder" plugin-version="R2016a">
+<deployment-project>
   <configuration build-checksum="1099881725" file="D:\Jose\GitHub\Vertex3D\Kg\lib\Cross.prj" location="D:\Jose\GitHub\Vertex3D\Kg\lib" name="Cross" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>

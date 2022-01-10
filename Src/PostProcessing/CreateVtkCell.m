@@ -44,6 +44,7 @@ function CreateVtkCell(Geo, Set, Step)
 		end
 		
 		cells  = sprintf("CELLS %d %d\n",totTris,4*totTris);
+		ntris = 0;
 		for f = 1:length(Geo.Cells(c).Faces)
             
 			face = Geo.Cells(c).Faces(f);
@@ -53,13 +54,14 @@ function CreateVtkCell(Geo, Set, Step)
 
 			    for t = 1:length(face.Tris)
 				    cells    = cells + sprintf("3 %d %d %d\n",...
-										    face.Tris(t,1)-1, face.Tris(t,2)-1, f+length(Ys)-1);
+										    face.Tris(t,1)-1, face.Tris(t,2)-1, f+length(Ys)-1-ntris);
     
 			    end
             else
 				    cells    = cells + sprintf("3 %d %d %d\n",...
 						face.Tris(1,1)-1, face.Tris(1,2)-1, face.Tris(2,2)-1);
-
+					% TODO FIXME, bad and unnecessary...
+					ntris = ntris + 1;
             end
 			
 		end

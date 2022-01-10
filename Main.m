@@ -3,20 +3,16 @@ addpath(genpath("Src"));
 
 disp('------------- SIMULATION STARTS -------------');
 
-Set=struct(); Geo=struct(); % TO DELETE!
-Set.OutputFolder='Result/test'; % TO DELETE!
+% Stretch
+Compress
 
 Set=SetDefault(Set);
-% TODO FIXME, HARDCODE, but it is also on the previous version
-Set.ApplyBC=true;
-% TODO FIXME, HARDCODE, but it is also on the previous version
-Set.MaxIter0 = Set.MaxIter;
-
 InitiateOutputFolder(Set);
 
 %% Mesh generation
 fprintf('Generating geometry\n')
 [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
+% TODO FIXME bad...
 Dofs       = GetDOFs(Geo, Set);
 Geo.Remodelling = false;
 % TODO FIXME HARDCODE FOR COMPARISON. Good definition is the minimum of
