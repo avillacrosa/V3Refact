@@ -23,23 +23,27 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
 	surf_ids  = surf_ids(FaceIds);
 	surf_ids  = surf_ids(vtk_order);
     % TODO FIXME IS THIS ACCEPTABLE?
-    if size(FaceTets,1) > 3
-	    Order=0;
-	    for iii=1:length(surf_ids)
-		    if iii==length(surf_ids)
-			    v1=Ys(surf_ids(iii),:)-FaceCentre;
-			    v2=Ys(surf_ids(1),:)-FaceCentre;
-			    Order=Order+dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
-		    else
-			    v1=Ys(surf_ids(iii),:)-FaceCentre;
-			    v2=Ys(surf_ids(iii+1),:)-FaceCentre;
-			    Order=Order+dot(cross(v1,v2),FaceCentre-X)/length(surf_ids);
-		    end
-	    end
-	    if Order<0 
-		    surf_ids=flip(surf_ids);
+%     if size(FaceTets,1) > 3
+	if size(FaceTets,1) == 3
+		centre = sum(Ys(surf_ids,:))/3;
+	else
+		centre = FaceCentre;
+	end
+    Order=0;
+    for iii=1:length(surf_ids)
+	    if iii==length(surf_ids)
+		    v1=Ys(surf_ids(iii),:)-centre;
+		    v2=Ys(surf_ids(1),:)-centre;
+		    Order=Order+dot(cross(v1,v2),centre-X)/length(surf_ids);
+	    else
+		    v1=Ys(surf_ids(iii),:)-centre;
+		    v2=Ys(surf_ids(iii+1),:)-centre;
+		    Order=Order+dot(cross(v1,v2),centre-X)/length(surf_ids);
 	    end
     end
+	if Order<0 
+	    surf_ids=flip(surf_ids);
+	end
 	edges = zeros(length(surf_ids), 2);
 	for yf = 1:length(surf_ids)-1
 		edges(yf,:) = [surf_ids(yf) surf_ids(yf+1)];

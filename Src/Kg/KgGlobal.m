@@ -3,8 +3,6 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	%% Calculate basic information
 	
 	% TODO FIXME, I think this should go out of here. Either after a step
-	% !!!!!!!!!!!!!!!!!!!! DEBATE DIFFERENCE BETWEEN GEO_N AND GEO!!!!!!!!!
-	% !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	% converged or before entering KgGlobal (last option preferred I think)
     for c = 1:Geo.nCells
         Cell = Geo.Cells(c);
@@ -39,5 +37,6 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	g = gs + gv + gf + gB;
 	K = Ks + Kv + Kf + KB;
 	E = ES + EV + EN + EB;
-%     fprintf("%.12f %.12f %.12f %.12f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
+% 	fprintf("%.12f %.12f %.12f %.12f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
+% 	fprintf("%.12f %.12f %.12f %.12f\n", norm(gs), norm(gv), norm(gf), norm(gB));
 end

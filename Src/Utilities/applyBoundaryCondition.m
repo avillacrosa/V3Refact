@@ -66,6 +66,10 @@ function [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set)
                 end
             end
 		end
+		Dofs.Free(ismember(Dofs.Free,Dofs.FixP))=[];
+        Dofs.Free(ismember(Dofs.Free,Dofs.FixC))=[];
+		1==1;
+% 		fprintf("%d %d %d\n",length(Dofs.Free), length(Dofs.FixC), length(Dofs.FixP));
     elseif Set.BC==1 || Set.BC==2
         Dofs.Free=unique([Dofs.Free; Dofs.FixC; Dofs.FixP]);
     end

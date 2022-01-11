@@ -26,10 +26,10 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 			Tris = Cell.Faces(f).Tris;
             for t=1:length(Tris)
 				y1 = Ys(Tris(t,1),:);
-%                 if c == 2 && f == 2 && t == 1
-%                     1 == 1;
-%                 end
 				y2 = Ys(Tris(t,2),:);
+				if c == 3 && f == 11
+					1==1;
+				end
 				if length(Tris) == 3
 					y3 = Ys(Tris(t+1,2),:);
 					n3 = Cell.globalIds(Tris(t+1,2));
@@ -49,15 +49,13 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 				end
 				[gs,Ks]=gKDet(y1, y2, y3); % gs is equal everytime
 				ge=Assembleg(ge,gs,nY); % but this assembly is fucked, only for the 3rd cell?
+% 				fprintf("%f %.2f %.2f %.2f %d %d %d \n", norm(ge), y3, c, f, t)
 				K = AssembleK(K,Ks*fact/6,nY);
 				ntris = ntris + 1;
 				if length(Tris) == 3
 					break
 				end
-            end
-%             if c == 3
-%                 disp(norm(ge));
-%             end
+			end
 		end
     	g=g+ge*fact/6; % Volume contribution of each triangle is det(Y1,Y2,Y3)/6
     	geMatrix = lambdaV*((ge)*(ge')/6/6/Cell.Vol0^2);

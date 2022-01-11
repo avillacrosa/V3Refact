@@ -21,8 +21,10 @@ function [Dofs]=GetDOFs(Geo, Set)
                 gconstrained(dim*(Face.globalIds-1)+1:dim*Face.globalIds) = 1;
             elseif Face.Centre(2) > Set.VPrescribed
                 gprescribed(dim*(Face.globalIds-1)+2) = 1;
-                gconstrained(dim*(Face.globalIds-1)+1) = 1;
-                gconstrained(dim*(Face.globalIds-1)+3) = 1;
+				if Set.BC == 1
+                	gconstrained(dim*(Face.globalIds-1)+1) = 1;
+                	gconstrained(dim*(Face.globalIds-1)+3) = 1;
+				end
             end
         end
         fixY = Y(:,2) < Set.VFixd;

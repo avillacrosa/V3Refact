@@ -1,4 +1,5 @@
 function Geo = Rebuild(Geo, Set)
+	% TODO FIXME, whole function needs to be rethought
 	for cc = 1:Geo.nCells
         Cell = Geo.Cells(cc);
         Neigh_nodes = unique(Geo.Cells(cc).T);
@@ -7,12 +8,25 @@ function Geo = Rebuild(Geo, Set)
 	        cj    = Neigh_nodes(j);
             ij			= [cc, cj];
             face_ids	= sum(ismember(Cell.T,ij),2)==2;
-			if j > length(Geo.Cells(cc).Faces)
-				Geo.Cells(cc).Faces(end+1) = BuildFace(cc, cj, Geo.Cells(cc), Geo.Cells(j), Geo.XgID, Set);
-				Geo.Cells(cc).Faces(end).Centre=sum(Geo.Cells(cc).Y(face_ids,:),1)/length(face_ids);
+			% TODO FIXME BAD PROGRAMMING...
+			newFace = true;
+			for jj = 1:length(Geo.Cells(cc).Faces)
+				Face = Geo.Cells(cc).Faces(jj);
+				if ismember(cj, Face.ij)
+					newFace = false;
+					break
+				end
+			end
+			if newFace
+% 				for upd = j:length(Geo.Cells(cc).Faces)
+				Geo.Cells(cc).Faces(j+1:length(Geo.Cells(cc).Faces)+1)=Geo.Cells(cc).Faces(j:length(Geo.Cells(cc).Faces));
+% 				end
+				Geo.Cells(cc).Faces(j)=BuildFace(cc, cj, Geo.Cells(cc), Geo.Cells(j), Geo.XgID, Set);
+				Geo.Cells(cc).Faces(j).Centre = sum(Geo.Cells(cc).Y(face_ids,:),1)/sum(face_ids);
 			else
-        		Geo.Cells(cc).Faces(j).Tris	= BuildEdges(Geo.Cells(cc).T, face_ids, Geo.Cells(cc).Faces(j).Centre, Geo.Cells(cc).X, Geo.Cells(cc).Y);
-				[Geo.Cells(cc).Faces(j).Area, Geo.Cells(cc).Faces(j).TrisArea]  = ComputeFaceArea(Geo.Cells(cc).Faces(j), Geo.Cells(cc).Y);
+				% TODO FIXME, I think this is an unnecessary call most of the time...
+				Geo.Cells(cc).Faces(j).Tris	= BuildEdges(Geo.Cells(cc).T, face_ids, Geo.Cells(cc).Faces(j).Centre, Geo.Cells(cc).X, Geo.Cells(cc).Y);
+				[Geo.Cells(cc).Faces(j).Area, Geo.Cells(cc).Faces(j).TrisArea]  = ComputeFaceArea(Geo.Cells(cc).Faces(j), Geo.Cells(cc).Y);	
 			end
 		end
 		Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));

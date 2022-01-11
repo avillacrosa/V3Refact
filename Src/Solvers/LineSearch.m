@@ -1,4 +1,4 @@
-function [alpha]=LineSearch(Geo_n, Geo, Set, gc, dy)
+function [alpha]=LineSearch(Geo_n, Geo, Dofs, Set, gc, dy)
 	
 	%% Update mechanical nodes
 	dy_reshaped = reshape(dy, 3, (Geo.numF+Geo.numY))';
@@ -20,11 +20,11 @@ function [alpha]=LineSearch(Geo_n, Geo, Set, gc, dy)
 %         	ME.rethrow();
 %     	end
 	end
-	% TODO FIXME...
-	dof = 1:length(g);
+	% TODO FXIME, there might not be necessary to take the full dofs
+	% but only the remodelled ones!! (we'll see later...)
+	dof = Dofs.Free;
 	gr0=norm(gc(dof));   
 	gr=norm(g(dof)); 
-	% TODO FIXME, small differences in gr are due 
 	
 	if gr0<gr
     	R0=dy(dof)'*gc(dof);
@@ -33,7 +33,6 @@ function [alpha]=LineSearch(Geo_n, Geo, Set, gc, dy)
     	R=(R0/R1);
     	alpha1=(R/2)+sqrt((R/2)^2-R);
     	alpha2=(R/2)-sqrt((R/2)^2-R);
-    	
     	
     	if isreal(alpha1) && alpha1<2 && alpha1>1e-3
         	alpha=alpha1;

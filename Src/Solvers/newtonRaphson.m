@@ -1,11 +1,17 @@
 function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t)
-	% TODO FIXME Add dofs
+	% TODO FIXME There should be a cleaner way for this...
+	if Geo.Remodelling
+    	% Changed by Adria. Typo
+	%     dfs=Dof.Remodel;
+    	dof=Dofs.Remodel;
+	else
+    	dof=Dofs.Free;
+	end
 	dy=zeros((Geo.numY+Geo.numF)*3, 1);
 	dyr=norm(dy(Dofs.Free)); gr=norm(g(Dofs.Free));
 	fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
 	Energy = 0;
 	Set.iter=1;
-    dof = Dofs.Free;
     auxgr=zeros(3,1);
     auxgr(1)=gr;
 	ig = 1;
@@ -13,7 +19,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, S
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     	dy(dof)=-K(dof,dof)\g(dof);
 		% TODO FIXME ADD...
-    	alpha = LineSearch(Geo_n, Geo, Set, g, dy);
+    	alpha = LineSearch(Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes
     	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY))';
     	[Geo] = updateVertices(Geo, Set, dy_reshaped);

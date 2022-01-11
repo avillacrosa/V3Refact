@@ -1,8 +1,9 @@
 clc; close all; clear;
-load('flip44data.mat');
+load('flipdisc44.mat');
 t=122;
 numStep=1;
 flip44(Geo_n, Geo, Dofs, Set);
+% flip44_new(Geo_n, Geo, Dofs, Set);
 % [Geo_n, Geo, Dofs] = Remodeling(Geo_n, Geo, Dofs, Set);
 % [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set);
 

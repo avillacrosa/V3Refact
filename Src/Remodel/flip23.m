@@ -1,4 +1,4 @@
-function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
+function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgIds)
 %FLIP23 Perform flip 2-3 operation, when the edge is short
 %   Involves replacing the edge pq as it shorten to zero length by the new 
 %   triangle ghf that is shared between cell A and B (A has been displaced 
@@ -10,7 +10,7 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
 %   - 3 vertices (and its correspondant tetrahedra) are created.
 
 %% loop over the rest of faces (Flip23)
-
+	
 	for c = 1:Geo.nCells
 		% WHOLE REMODELLING WILL BE INSIDE HERE
 		for f = 1:length(Geo.Cells(c).Faces)
@@ -18,8 +18,15 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
 		    Ts = Geo.Cells(c).T;
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
+			for t = 1:length(Face.Tris)
+				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>1;
+				if cond
+					nrgs(t) = 0;
+				end
+			end
 			[~,idVertex]=max(nrgs);
-            if max(nrgs)<Set.RemodelTol
+
+            if max(nrgs)<Set.RemodelTol||length(unique(Face.Tris)) == 3
                 continue
             end
 			edgeToChange = Face.Tris(idVertex,:);
@@ -41,7 +48,7 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
 		    if CheckSkinnyTriangles(Ys(edgeToChange(1),:),Ys(edgeToChange(2),:),Face.Centre)
         		continue
     		end
-
+			
 			ghostNodes = ismember(Tnew,Geo.XgID);
     		ghostNodes = all(ghostNodes,2);
 			if any(ghostNodes)
@@ -49,12 +56,17 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
         		return
 			end
 			% TODO FIXME, CheckConvexityCondition check to add
+			Geo_backup = Geo;
+			Geo_n_backup = Geo_n;
 			fprintf('=>> 23 Flip.\n');
 			% TODO FIXME IMPORTANT. X's are not updated in this current 
 			% version, and so Ynew is slightly different...
         	Ynew=PerformFlip23(Ys(edgeToChange,:),Geo,n3);
         	Ynew(ghostNodes,:)=[];
-
+			if CheckConvexityCondition(Tnew, Geo.Cells(c).T, Geo)
+    			fprintf('=>> 23-Flip is not compatible rejected.\n');
+				continue
+			end
 			% ========== YNEW TNEW THE SAME UP TO HERE =============
 			targetTets = Geo.Cells(c).T(edgeToChange,:);
 
@@ -104,22 +116,37 @@ function [Geo_n, Geo, Dofs] = flip23(Geo_n, Geo, Dofs, Set)
 			% DOFs when computing K and g ?
 			Geo.AssembleNodes = unique(Tnew);
 			Dofs = GetDOFs(Geo, Set);
-            DofsR = Dofs;
-			
 
 			% TODO FIXME THIS SHOULD ALSO BE CHANGED ACCORDINGLY!
 			remodelDofs = zeros(0,1);
 			for ccc = 1:Geo.nCells
 				news = find(sum(ismember(Tnew,ccc)==1,2));
 				remodelDofs(end+1:end+length(news)) = Geo.Cells(ccc).globalIds(end-length(news)+1:end,:);
+				for jj = 1:length(Geo.Cells(ccc).Faces)
+					Face = Geo.Cells(ccc).Faces(jj);
+					FaceTets = Geo.Cells(ccc).T(unique(Face.Tris),:);
+					hits = find(sum(ismember(Tnew,FaceTets),2)==4);
+					if length(hits)>3
+						remodelDofs(end+1) = Face.globalIds;
+					end
+
+				end
+				% NEW FACE CENTER DOF MISSING!
 			end
-            DofsR.Free = unique(remodelDofs, 'rows');
-            Geo.AssemblegIds  = DofsR.Free;
-            DofsR.Free = 3.*(kron(DofsR.Free',[1 1 1])-1)+kron(ones(1,length(DofsR.Free')),[1 2 3]);
+            Dofs.Remodel = unique(remodelDofs, 'rows');
+			newgIds(end+1:end+length(Dofs.Remodel)) = Dofs.Remodel;
+
+            Geo.AssemblegIds  = Dofs.Remodel;
+            Dofs.Remodel = 3.*(kron(Dofs.Remodel',[1 1 1])-1)+kron(ones(1,length(Dofs.Remodel')),[1 2 3]);
 			Geo.Remodelling = true;
-            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_n, Geo, DofsR, Set);
+            [Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_n, Geo, Dofs, Set);
 			Geo.Remodelling = false;
-			PostProcessingVTK(Geo,Set,-11)
+			if  DidNotConverge
+            	Geo = Geo_backup;
+				Geo_n= Geo_n_backup;
+            	fprintf('=>> Local problem did not converge -> 23 Flip rejected !! \n');
+            	return
+			end
             return
             % TODO FIXME also update DOFS?
 		end

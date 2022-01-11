@@ -62,7 +62,6 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 				[gs,Ks,Kss]=gKSArea(y1,y2,y3);
 				gs=Lambda*gs;
             	ge=Assembleg(ge,gs,nY);
-%                 fprintf("%d %d %d %d\n", norm(ge), c, f, t);
 				Ks=fact*Lambda*(Ks+Kss);
 				K = AssembleK(K,Ks,nY);
 				if length(Tris) == 3
