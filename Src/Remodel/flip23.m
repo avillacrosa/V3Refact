@@ -25,8 +25,7 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
 				end
 			end
 			[~,idVertex]=max(nrgs);
-
-            if max(nrgs)<Set.RemodelTol||length(unique(Face.Tris)) == 3
+            if max(nrgs)<Set.RemodelTol || length(unique(Face.Tris)) == 3
                 continue
             end
 			edgeToChange = Face.Tris(idVertex,:);
@@ -63,10 +62,6 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
 			% version, and so Ynew is slightly different...
         	Ynew=PerformFlip23(Ys(edgeToChange,:),Geo,n3);
         	Ynew(ghostNodes,:)=[];
-			if CheckConvexityCondition(Tnew, Geo.Cells(c).T, Geo)
-    			fprintf('=>> 23-Flip is not compatible rejected.\n');
-				continue
-			end
 			% ========== YNEW TNEW THE SAME UP TO HERE =============
 			targetTets = Geo.Cells(c).T(edgeToChange,:);
 
@@ -104,14 +99,24 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
             % implicated cells, and then recalculate global Ids after all
             % flips are performed ???
 %             PostProcessingVTK(Geo, Set, -1)
-			Geo = Rebuild(Geo, Set);
+			[Geo, flag]= Rebuild(Geo, Set);
+            if flag
+                Geo = Geo_backup;
+                Geo_n = Geo_n_backup;
+                continue
+            end
 			Geo_n = Rebuild(Geo_n, Set);
-
 
 % 			PostProcessingVTK(Geo, Set, -2)
 	        Geo = BuildGlobalIds(Geo);
 			Geo_n = BuildGlobalIds(Geo_n);
 
+			if CheckConvexityCondition(Tnew, Geo_backup.Cells(c).T, Geo)
+            	Geo = Geo_backup;
+				Geo_n= Geo_n_backup;
+    			fprintf('=>> 23-Flip is not compatible rejected.\n');
+				continue
+			end
 			% TODO FIXME, I don't like this. Possible way is to take only 
 			% DOFs when computing K and g ?
 			Geo.AssembleNodes = unique(Tnew);

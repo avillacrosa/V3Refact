@@ -45,7 +45,7 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip44(Geo_n, Geo, Dofs, Set, newgId
         	Tnew4=Ts(oV(4),:);       Tnew4(ismember(Tnew4,NX(2)))=NZ(~ismember(NZ,Tnew4));
         	Tnew=[Tnew1;Tnew2;Tnew3;Tnew4];
 			Ynew=Flip44(Ys(oV,:),Tnew,L,Geo);
-			if CheckConvexityCondition(Tnew,Ts,Geo)
+			if CheckConvexityCondition(Tnew,Geo_backup.Cells(c).T,Geo)
     			fprintf('=>> 44-Flip is not compatible rejected.\n');
     			continue
 			end
@@ -83,7 +83,12 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip44(Geo_n, Geo, Dofs, Set, newgId
 				Geo_n.Cells(Face.ij(2)).Faces(oppfaceId) = [];
 			end
 				
-            Geo = Rebuild(Geo, Set);
+            [Geo, flag]= Rebuild(Geo, Set);
+            if flag
+                Geo = Geo_backup;
+                Geo_n = Geo_n_backup;
+                continue
+            end
 			Geo_n = Rebuild(Geo_n, Set);
 
 % 			PostProcessingVTK(Geo, Set, -2)

@@ -46,7 +46,7 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
 			end
 			Ynew=Flip32(Ys(oV,:),Xs);
 
-			if CheckConvexityCondition(Tnew,Ts,Geo)
+			if CheckConvexityCondition(Tnew,Geo_backup.Cells(c).T,Geo)
     			fprintf('=>> 32-Flip is not compatible rejected.\n');
     			continue
 			end
@@ -86,7 +86,12 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
 				Geo_n.Cells(Face.ij(2)).Faces(oppfaceId) = [];newgIds
 			end
 			
-			Geo = Rebuild(Geo, Set);
+			[Geo, flag]= Rebuild(Geo, Set);
+            if flag
+                Geo = Geo_backup;
+                Geo_n = Geo_n_backup;
+                continue
+            end
 			Geo_n = Rebuild(Geo_n, Set);
 
 	% 			PostProcessingVTK(Geo, Set, -2)

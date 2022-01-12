@@ -10,17 +10,24 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
 		    i = sum(ismember(FaceTets, prev_tet),2)==3;
 		    i = i & ~ismember(1:length(FaceTets),vtk_order)';
 		    i = find(i);
+            if isempty(i)
+                edges = [];
+                return
+            end
 		    vtk_order(yi) = i(1);
 		    prev_tet = FaceTets(i(1),:);
         end
     else
         % TODO FIXME is this enough??? will it get flipped later if not
         % correct ???
-        fprintf("TRIIIIIIIIIIIIIIIIIIIIII\n");
         vtk_order = [1 2 3]';
     end
 	surf_ids  = 1:length(Tets); 
 	surf_ids  = surf_ids(FaceIds);
+    if length(surf_ids) < 3
+        edges = [];
+        return
+    end
 	surf_ids  = surf_ids(vtk_order);
     % TODO FIXME IS THIS ACCEPTABLE?
 %     if size(FaceTets,1) > 3

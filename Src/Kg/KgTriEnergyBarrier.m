@@ -17,6 +17,9 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
             Face = Cell.Faces(f);
 			Tris = Cell.Faces(f).Tris;
 			for t = 1:length(Tris)
+                if c == 2 && f == 17 && t == 2 
+                    1 == 1;
+                end
 				fact=-((lambdaB*Set.Beta)/Set.BarrierTri0)* ... % * ...
 				                    exp(lambdaB*(1-Set.Beta*Face.TrisArea(t)/Set.BarrierTri0));
 				fact2=fact*-((lambdaB*Set.Beta)/Set.BarrierTri0);
@@ -44,6 +47,7 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 				Ks=(gs)*(gs')*fact2+Ks*fact+Kss*fact;
 				K= AssembleK(K,Ks,nY);
 				EnergyB=EnergyB+ exp(lambdaB*(1-Set.Beta*Face.TrisArea(t)/Set.BarrierTri0));
+%                 fprintf("%.12f %.12f %.12f %.3f %.3f %-3f %d %d %d\n", norm(g), norm(K), EnergyB, y3, c, f, t);
 				if length(Tris) == 3
 					break
 				end

@@ -7,7 +7,7 @@ function [alpha]=LineSearch(Geo_n, Geo, Dofs, Set, gc, dy)
 	[Geo] = updateVertices(Geo, Set, dy_reshaped);
 	
 	try
-    	[g,~,~]=KgGlobal(Geo_n, Geo, Set);
+    	g=KgGlobal(Geo_n, Geo, Set);
 	catch ME
 		ME.rethrow();
 %     	if (strcmp(ME.identifier,'KgBulk:invertedTetrahedralElement'))
