@@ -1,5 +1,5 @@
 close all; clear; clc;
-addpath(genpath("Src"));
+addpath(genpath('Src'));
 
 disp('------------- SIMULATION STARTS -------------');
 
@@ -10,49 +10,57 @@ Set=SetDefault(Set);
 InitiateOutputFolder(Set);
 
 %% Mesh generation
-fprintf('Generating geometry\n')
 [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
-% TODO FIXME bad...
-Dofs       = GetDOFs(Geo, Set);
+
+Dofs            = GetDOFs(Geo, Set);
 Geo.Remodelling = false;
-% TODO FIXME HARDCODE FOR COMPARISON. Good definition is the minimum of
-% areatri and barriertri inside initialize geometry
-t=0;
-tr=0;
-tp=0;
-Geo_n = Geo;
-numStep=1;
+Set.fout = fopen('log.txt','w+');
+t=0; tr=0; tp=0;
+Geo_n   = Geo;
+numStep = 1;
 
 PostProcessingVTK(Geo, Set, numStep)
 while t<=Set.tend
-	if t == 92
-		1 == 1;
-	end
-    if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
+
+	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
         [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_n, Geo, Dofs, Set);
         tr    = t;
-    end
+	end
+	Geo_b = Geo;
+	Set.iIncr=numStep;
+
     [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set);
 	[g,K] = KgGlobal(Geo_n, Geo, Set); % TODO FIXME, Isn't this bad btw ?
 	[Geo, g, K, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t);
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) && Set.nu/Set.nu0 == 1
+		fprintf('STEP %i has converged ...\n',Set.iIncr)
+
         Geo = BuildXFromY(Geo_n, Geo);
+		tp=t;
+
         t=t+Set.dt;
+		Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
+		Set.MaxIter=Set.MaxIter0;
+		Set.ApplyBC=true;
         numStep=numStep+1;
         Geo_n = Geo;
         PostProcessingVTK(Geo, Set, numStep)
     else 
         fprintf('Convergence was not achieved ... \n');
-        Geo = Geo_n;
+        Geo = Geo_b;
+		% If all iterations where exhausted, use *3 the initial max
+		% iterations, then multiply nu per 10 and recalculate
         if Set.iter == Set.MaxIter0 
             fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
             Set.MaxIter=Set.MaxIter0*3;
             Set.nu=10*Set.nu0;
+		% If all iterations where exhausted, w.r.t. 3*initial max
+		% iterations, 
         elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
             fprintf('Second strategy ---> Repeating the step with half step-size...\n');
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;
-            tp=t;
+            t=tp;
             Set.dt=Set.dt/2;
             t=t+Set.dt;
         else

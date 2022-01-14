@@ -10,15 +10,16 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip44(Geo_n, Geo, Dofs, Set, newgId
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			for t = 1:length(Face.Tris)
-				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>1;
+				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>=1;
 				if cond
 					nrgs(t) = 0;
 				end
 			end
-            if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4
+% 			if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4
+			if (max(nrgs)<Set.RemodelTol && min(nrgs)<Set.RemodelTol/0.5) || length(unique(Face.Tris))~=4
                 continue
 			end
-% 			oV=[Face.Tris(3,1); Face.Tris(2,1); Face.Tris(1,1); Face.Tris(4,1)];
+			
 			oV=[Face.Tris(1,1); Face.Tris(2,1); Face.Tris(3,1); Face.Tris(4,1)];
 
 			Geo_backup = Geo;

@@ -1,19 +1,15 @@
 clc; close all; clear
 
-load('KgTest.mat');
-faces = zeros(0,3);
-for c = 1:Geo.nCells
-    for f = 1:length(Geo.Cells(c).Faces)
-        faces(end+1,:) = Geo.Cells(c).Faces(f).Centre;
-    end
-end
-faces = unique(faces,'rows');
-load('/home/adria/Nursery/Stable/FMalik.mat');
+load('/home/doctorantlacan/Vertex3DTEST/weirdF.mat');
+load('weird.mat');
+faces = getFaces(Geo);
 
 idxs = [];
-for c = 1:length(malikFaces)
-    yc = malikFaces(c,:);
+for c = 1:length(weirdF)
+    yc = weirdY(c,:);
     idx = find(vecnorm(yc-faces,2,2) < 1e-4);
     idxs(end+1) = idx;
 end
-resF = faces(idxs,:);
+resY = faces(idxs,:);
+
+save('myY','resF')

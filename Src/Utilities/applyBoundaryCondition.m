@@ -48,7 +48,7 @@ function [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set)
 		Set.VPrescribed = maxY-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
 		Dofs = GetDOFs(Geo, Set);
 		[dimP, numP] = ind2sub([3, Geo.numY+Geo.numF],Dofs.FixP);
-        for c = 1:Geo.nCells
+		for c = 1:Geo.nCells
             prescYi  = ismember(Geo.Cells(c).globalIds, numP);
             Geo.Cells(c).Y(prescYi,2) = Set.VPrescribed;
             

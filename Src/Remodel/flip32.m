@@ -13,7 +13,7 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 
 			for t = 1:length(Face.Tris)
-				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>1;
+				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>=1;
 				if cond
 					nrgs(t) = 0;
 				end

@@ -9,6 +9,7 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
         for f = 1:length(Cell.Faces)
             Face = Geo.Cells(c).Faces(f);
 	        [Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea] = ComputeFaceArea(Face, Cell.Y);
+% 			Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea
         end
         Geo.Cells(c).Vol = ComputeCellVolume(Cell);
     end
@@ -37,8 +38,8 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	g = gs + gv + gf + gB;
 	K = Ks + Kv + Kf + KB;
 	E = ES + EV + EN + EB;
-    if nargout > 1
-% 	    fprintf("%.12f %.12f %.12f %.12f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
-% 	    fprintf("%.12f %.12f %.12f %.12f\n", norm(gs), norm(gv), norm(gf), norm(gB));
-    end
+%     if nargout > 1
+% 	    fprintf("%.16f %.16f %.16f %.16f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
+% 	    fprintf("%.16f %.16f %.16f %.16f\n", norm(gs), norm(gv), norm(gf), norm(gB));
+%     end
 end

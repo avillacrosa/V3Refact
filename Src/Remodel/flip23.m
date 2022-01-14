@@ -19,7 +19,9 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			for t = 1:length(Face.Tris)
-				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>1;
+				% TODO FIXME, why make this condition so cryptic, just use
+				% what's on the previous version!!!
+				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>=1;
 				if cond
 					nrgs(t) = 0;
 				end

@@ -19,7 +19,9 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 
 	% TODO FIXME Might be bad. Ideally use length of X before selecting
 	% unconnected nodes zeros(length(X),1)
-	conv = zeros(max(Twg,[],"all"),1);
+% 	conv = zeros(max(Twg,[],"all"),1);
+	conv = zeros(max(max(Twg)),1);
+
 	conv(unique(Twg)) = 1:size(X);
 	Twg = conv(Twg);
 

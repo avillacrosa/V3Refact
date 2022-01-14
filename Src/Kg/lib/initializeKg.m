@@ -4,4 +4,3 @@ function [g, K] = initializeKg(Geo, Set)
 	g = zeros(dimg, 1);
 	K = zeros(dimg, dimg);
 end
-
