@@ -5,11 +5,11 @@ function Face = BuildFace(ci, cj, Cell, CellJ, XgID, Set)
 
 	Face				= struct();
 	Face.ij				= ij;
-	Face.globalIds		= -1; % ???
+	Face.globalIds		= -1;
 	Face.InterfaceType	= BuildInterfaceType(ij, XgID);
 	Face.Centre			= BuildFaceCentre(ij, Cell.X, Cell.Y(face_ids,:), Set.f);
 	Face.Tris			= BuildEdges(Cell.T, face_ids, Face.Centre, Cell.X, Cell.Y);
     
 	[Face.Area, Face.TrisArea]  = ComputeFaceArea(Face, Cell.Y);
-	Face.Area0			= 0; % TODO FIXME how to deal with this ???
+    Face.Area0 = Face.Area;
 end

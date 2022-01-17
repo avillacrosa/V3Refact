@@ -64,7 +64,7 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
 			% version, and so Ynew is slightly different...
         	Ynew=PerformFlip23(Ys(edgeToChange,:),Geo,n3);
         	Ynew(ghostNodes,:)=[];
-			% ========== YNEW TNEW THE SAME UP TO HERE =============
+			% ========== YNEW TNEW THE SAME UP TO HERE =============    
 			targetTets = Geo.Cells(c).T(edgeToChange,:);
 
 			% TODO FIXME As in Function removeFaceinRemodelling. 
@@ -105,6 +105,7 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
             if flag
                 Geo = Geo_backup;
                 Geo_n = Geo_n_backup;
+                fprintf("=>> Flip23 is is not compatible rejected !! \n");
                 continue
             end
 			Geo_n = Rebuild(Geo_n, Set);

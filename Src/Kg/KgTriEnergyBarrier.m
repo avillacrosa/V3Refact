@@ -25,7 +25,6 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 				if length(Tris) == 3
 					y3 = Ys(Tris(t+1,2),:);
 					n3 = Cell.globalIds(Tris(t+1,2));
-% 					fprintf("Tri\n");
 				else
 					y3 = Cell.Faces(f).Centre;
 					n3 = Cell.Faces(f).globalIds;

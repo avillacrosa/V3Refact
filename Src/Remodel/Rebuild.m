@@ -19,9 +19,7 @@ function [Geo, flag] = Rebuild(Geo, Set)
 				end
 			end
 			if newFace
-% 				for upd = j:length(Geo.Cells(cc).Faces)
 				Geo.Cells(cc).Faces(j+1:length(Geo.Cells(cc).Faces)+1)=Geo.Cells(cc).Faces(j:length(Geo.Cells(cc).Faces));
-% 				end
 				Geo.Cells(cc).Faces(j)=BuildFace(cc, cj, Geo.Cells(cc), Geo.Cells(j), Geo.XgID, Set);
 				Geo.Cells(cc).Faces(j).Centre = sum(Geo.Cells(cc).Y(face_ids,:),1)/sum(face_ids);
 			else
@@ -31,7 +29,9 @@ function [Geo, flag] = Rebuild(Geo, Set)
                     flag = true;
                     return;
                 end
-				[Geo.Cells(cc).Faces(j).Area, Geo.Cells(cc).Faces(j).TrisArea]  = ComputeFaceArea(Geo.Cells(cc).Faces(j), Geo.Cells(cc).Y);	
+            	Geo.Cells(cc).Faces(j).InterfaceType	= BuildInterfaceType(ij, Geo.XgID);
+                Geo.Cells(cc).Faces(j).ij = ij;
+				[Geo.Cells(cc).Faces(j).Area, Geo.Cells(cc).Faces(j).TrisArea] = ComputeFaceArea(Geo.Cells(cc).Faces(j), Geo.Cells(cc).Y);	
 			end
 		end
 		Geo.Cells(cc).Area  = ComputeCellArea(Geo.Cells(cc));

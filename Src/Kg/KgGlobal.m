@@ -12,10 +12,11 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 % 			Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea
         end
         Geo.Cells(c).Vol = ComputeCellVolume(Cell);
+%         fprintf("%.8f ", Geo.Cells(c).Vol)
     end
+%     fprintf("\n")
 	% [Cell] = Cell.computeEdgeLengths(Y);
 	% [Cell] = Cell.computeEdgeLocation(Y);
-
 	%% Surface Energy
 	[gs,Ks,ES]=KgSurfaceCellBasedAdhesion(Geo,Set);
 	%% Volume Energy
@@ -26,8 +27,17 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	% TODO
 	%% Bending Energy
 	% TODO
+
+	g = gv+gf+gs;
+	K = Kv+Kf+Ks;
+	E = EV+ES+EN;
 	%% Triangle Energy Barrier
-	[gB,KB,EB]=KgTriEnergyBarrier(Geo, Set);
+    if Set.EnergyBarrier
+	    [gB,KB,EB]=KgTriEnergyBarrier(Geo, Set);
+        g = g + gB;
+        K = K + KB;
+        E = E + EB;
+    end
 	%% Propulsion Forces
 	% TODO
 	%% Contractility
@@ -35,11 +45,8 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	%% Substrate
 	% TODO
 	%% Return
-	g = gs + gv + gf + gB;
-	K = Ks + Kv + Kf + KB;
-	E = ES + EV + EN + EB;
-%     if nargout > 1
-% 	    fprintf("%.16f %.16f %.16f %.16f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
-% 	    fprintf("%.16f %.16f %.16f %.16f\n", norm(gs), norm(gv), norm(gf), norm(gB));
-%     end
+    if nargout > 1
+	    fprintf("%.16f %.16f %.16f %.16f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
+	    fprintf("%.16f %.16f %.16f %.16f\n", norm(gs), norm(gv), norm(gf), norm(gB));
+    end
 end

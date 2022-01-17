@@ -15,8 +15,8 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip44(Geo_n, Geo, Dofs, Set, newgId
 					nrgs(t) = 0;
 				end
 			end
-% 			if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4
-			if (max(nrgs)<Set.RemodelTol && min(nrgs)<Set.RemodelTol/0.5) || length(unique(Face.Tris))~=4
+			if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4
+% 			if (max(nrgs)<Set.RemodelTol && min(nrgs)<Set.RemodelTol/1.5) || length(unique(Face.Tris))~=4
                 continue
 			end
 			

@@ -20,16 +20,15 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, S
     auxgr(1)=gr;
 	ig = 1;
 %     Set.tol = 1e-14;
-
+%     Set.nu= 10*Set.nu;
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
-		
     	dy(dof)=-K(dof,dof)\g(dof);
     	alpha = LineSearch(Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes
     	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY))';
     	[Geo] = updateVertices(Geo, Set, dy_reshaped);
 
-        if Set.nu > Set.nu0 && gr<Set.tol
+        if Set.nu > Set.nu0 && gr<1e-8
             Set.nu = max(Set.nu/2, Set.nu0);
         end
     	%% ----------- Compute K, g ---------------------------------------

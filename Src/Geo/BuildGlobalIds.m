@@ -17,9 +17,9 @@ function Geo = BuildGlobalIds(Geo)
             % find face i
             for f = 1:length(Cell.Faces)
                 Face = Cell.Faces(f);
-                if length(Cell.Faces(f).Tris)==3
-                    continue
-                end
+%                 if length(Cell.Faces(f).Tris)==3
+%                     continue
+%                 end
                 if sum(ismember(Face.ij, ij),2) == 2
                     for f2 = 1:length(CellJ.Faces)
                         FaceJ = CellJ.Faces(f2);

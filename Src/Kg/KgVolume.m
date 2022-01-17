@@ -21,15 +21,11 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
     	fact=lambdaV*(Cell.Vol-Cell.Vol0)/Cell.Vol0^2;
     	
     	ge=zeros(size(g, 1), 1);
-		ntris = 0;
 		for f = 1:length(Cell.Faces)
 			Tris = Cell.Faces(f).Tris;
             for t=1:length(Tris)
 				y1 = Ys(Tris(t,1),:);
 				y2 = Ys(Tris(t,2),:);
-				if c == 3 && f == 11
-					1==1;
-				end
 				if length(Tris) == 3
 					y3 = Ys(Tris(t+1,2),:);
 					n3 = Cell.globalIds(Tris(t+1,2));
@@ -47,11 +43,10 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
                         end
 					end
 				end
-				[gs,Ks]=gKDet(y1, y2, y3); % gs is equal everytime
-				ge=Assembleg(ge,gs,nY); % but this assembly is fucked, only for the 3rd cell?
-% 				fprintf("%f %.2f %.2f %.2f %d %d %d \n", norm(ge), y3, c, f, t)
+				[gs,Ks]=gKDet(y1, y2, y3); 
+				ge=Assembleg(ge,gs,nY); 
+% 				fprintf("%.15f %.2f %.2f %.2f %d %d %d \n", norm(ge), y3, c, f, t)
 				K = AssembleK(K,Ks*fact/6,nY);
-				ntris = ntris + 1;
 				if length(Tris) == 3
 					break
 				end
