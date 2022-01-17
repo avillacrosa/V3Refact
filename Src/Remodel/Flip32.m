@@ -1,17 +1,13 @@
-function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgIds)
+function [Geo_n, Geo, Dofs, Set, newgIds] = Flip32(Geo_n, Geo, Dofs, Set, newgIds)
 	%FLIP32 Summary of this function goes here
 	%   Detailed explanation goes here
 	%% loop over 3-vertices-faces (Flip32)
 	
 	DidNotConverge = false;
 	for c = 1:Geo.nCells
-		% WHOLE REMODELLING WILL BE INSIDE HERE
 		for f = 1:length(Geo.Cells(c).Faces)
 	    	Ys = Geo.Cells(c).Y;
 	    	Ts = Geo.Cells(c).T;
-% 			if f > length(Geo.Cells(c).Faces)
-% 				continue
-% 			end
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 	
@@ -23,48 +19,13 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
 			Geo_n_backup = Geo_n;
 			fprintf('=>> 32 Flip.\n');
 			oV=[Face.Tris(1,1); Face.Tris(2,1); Face.Tris(3,1)];
-			n=intersect(intersect(Ts(oV(1),:),Ts(oV(2),:)),Ts(oV(3),:));
-			N=unique(Ts(oV,:)); % all nodes
-			N=N(~ismember(N,n));
-	
-			N3=N(~ismember(N,Ts(oV(1),:)));
-			Tnew1=Ts(oV(1),:); Tnew2=Tnew1;
-			Tnew1(ismember(Ts(oV(1),:),n(2)))=N3;
-			Tnew2(ismember(Ts(oV(1),:),n(1)))=N3;
-			Tnew=[Tnew1;
-      		  	Tnew2];
-	
-			% The new vertices 
-			Xs = zeros(length(n),3);
-			for ni = 1:length(n)
-				Xs(ni,:) = Geo.Cells(n(ni)).X;
-			end
-			Ynew=Flip32(Ys(oV,:),Xs);
+
 
 			if CheckConvexityCondition(Tnew,Geo_backup.Cells(c).T,Geo)
     			fprintf('=>> 32-Flip is not compatible rejected.\n');
     			continue
 			end
 	
-			targetTets = Geo.Cells(c).T(oV,:);
-			targetNodes = unique(targetTets);
-			for n_i = 1:length(targetNodes)
-				tNode = targetNodes(n_i);
-				CellJ = Geo.Cells(tNode);
-				hits = find(sum(ismember(CellJ.T,targetTets),2)==4);
-				Geo.Cells(tNode).T(hits,:) = [];
-				Geo_n.Cells(tNode).T(hits,:) = [];
-				
-				news = find(sum(ismember(Tnew,tNode)==1,2));
-				Geo.Cells(tNode).T(end+1:end+length(news),:) = Tnew(news,:);
-				Geo_n.Cells(tNode).T(end+1:end+length(news),:) = Tnew(news,:);
-				if ~ismember(tNode, Geo.XgID)
-					Geo.Cells(tNode).Y(hits,:) = [];
-					Geo_n.Cells(tNode).Y(hits,:) = [];
-					Geo.Cells(tNode).Y(end+1:end+length(news),:) = Ynew(news,:);
-					Geo_n.Cells(tNode).Y(end+1:end+length(news),:) = Ynew(news,:);
-				end
-			end
 			
 			% TODO FIXME, is this sustainable? I think so no ?
 			oppfaceId = [];
@@ -137,25 +98,5 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
         	return
 		end
 	end
-end
-
-%% ========================================================================
-function [Yn]=Flip32(Y,X12)
-length=[norm(Y(1,:)-Y(2,:)) norm(Y(3,:)-Y(2,:)) norm(Y(1,:)-Y(3,:))];
-length=min(length);
-perpen=cross(Y(1,:)-Y(2,:),Y(3,:)-Y(2,:));
-Nperpen=perpen/norm(perpen);
-center=sum(Y,1)./3;
-Nx=X12(1,:)-center; Nx=Nx/norm(Nx);
-if dot(Nperpen,Nx)>0
-    Y1=center+(length).*Nperpen;
-    Y2=center-(length).*Nperpen;
-else
-    Y1=center-(length).*Nperpen;
-    Y2=center+(length).*Nperpen;
-end 
-% Y1=center+(length).*Nperpen;
-% Y2=center-(length).*Nperpen;
-Yn=[Y1;Y2];
 end
 

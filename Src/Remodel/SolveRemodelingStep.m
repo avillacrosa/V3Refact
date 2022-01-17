@@ -15,7 +15,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
     
     Set.nu0=Set.nu;
     Set.nu=Set.nu_LP_Initial;
-    
+    Geo.Remodelling = true;
     Set.MaxIter=Set.MaxIter0/2;
     while 1
         [g,K, Geo]=KgGlobal(Geo_n, Geo, Set);
@@ -44,6 +44,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
             fprintf('=====>> Local Problem converged in %i iterations.\n',Set.iter);
             DidNotConverge=false;
             Set.nu=original_nu;
+			Geo.Remodelling = false;
             break;
         end
     end 
