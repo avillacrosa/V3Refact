@@ -1,35 +1,16 @@
 close all; clear; clc;
-addpath(genpath('Src'));
-
-disp('------------- SIMULATION STARTS -------------');
-
-% Stretch
-Compress
-
-Set=SetDefault(Set);
-InitiateOutputFolder(Set);
-
-%% Mesh generation
-[Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
-
-Dofs            = GetDOFs(Geo, Set);
-Geo.Remodelling = false;
-Set.fout = fopen('log.txt','w+');
-t=0; tr=0; tp=0;
-Geo_n   = Geo;
-numStep = 1;
-
-PostProcessingVTK(Geo, Set, numStep)
+load('pre90remo.mat');
 while t<=Set.tend
-	
+
 	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
         [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_n, Geo, Dofs, Set);
         tr    = t;
 	end
 	Geo_b = Geo;
 	Set.iIncr=numStep;
-
+% 
     [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set);
+% 	load('preKG');
 	[g,K,Geo] = KgGlobal(Geo_n, Geo, Set); % TODO FIXME, Isn't this bad btw ?
 	[Geo, g, K, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t);
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) && Set.nu/Set.nu0 == 1

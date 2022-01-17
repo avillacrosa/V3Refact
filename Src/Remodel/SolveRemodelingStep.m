@@ -18,7 +18,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
     
     Set.MaxIter=Set.MaxIter0/2;
     while 1
-        [g,K]=KgGlobal(Geo_n, Geo, Set);
+        [g,K, Geo]=KgGlobal(Geo_n, Geo, Set);
         
         dy=zeros((Geo.numF+Geo.numY)*3);
         dyr=norm(dy(Dofs.Remodel));

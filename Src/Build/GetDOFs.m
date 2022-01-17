@@ -14,7 +14,6 @@ function [Dofs]=GetDOFs(Geo, Set)
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Geo.Cells(c).Faces(f);
             if length(Face.Tris) == 3
-				fprintf("Tri, remove 3\n")
                 continue
             end
             if Face.Centre(2) < Set.VFixd

@@ -23,7 +23,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
     	ge=zeros(size(g, 1), 1);
 		for f = 1:length(Cell.Faces)
 			Tris = Cell.Faces(f).Tris;
-            for t=1:length(Tris)
+			for t=1:length(Tris)
 				y1 = Ys(Tris(t,1),:);
 				y2 = Ys(Tris(t,2),:);
 				if length(Tris) == 3
@@ -45,7 +45,7 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 				end
 				[gs,Ks]=gKDet(y1, y2, y3); 
 				ge=Assembleg(ge,gs,nY); 
-% 				fprintf("%.15f %.2f %.2f %.2f %d %d %d \n", norm(ge), y3, c, f, t)
+% 				fprintf("%.15f %.2f %.2f %.2f %d %d %d \n", norm(g), y3, c, f, t);
 				K = AssembleK(K,Ks*fact/6,nY);
 				if length(Tris) == 3
 					break

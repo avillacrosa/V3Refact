@@ -9,18 +9,13 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
 		for f = 1:length(Geo.Cells(c).Faces)
 	    	Ys = Geo.Cells(c).Y;
 	    	Ts = Geo.Cells(c).T;
+% 			if f > length(Geo.Cells(c).Faces)
+% 				continue
+% 			end
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
-
-			for t = 1:length(Face.Tris)
-				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>=1;
-				if cond
-					nrgs(t) = 0;
-				end
-			end
-			[~,idVertex]=max(nrgs);
 	
-        	if max(nrgs)<Set.RemodelTol || length(unique(Face.Tris)) ~= 3
+			if max(nrgs)<Set.RemodelTol || length(unique(Face.Tris)) ~= 3
             	continue
 			end
 
@@ -83,8 +78,9 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
 			Geo_n.Cells(c).Faces(f) = [];
 			if ~isempty(oppfaceId)
 				Geo.Cells(Face.ij(2)).Faces(oppfaceId) = [];
-				Geo_n.Cells(Face.ij(2)).Faces(oppfaceId) = [];newgIds
+				Geo_n.Cells(Face.ij(2)).Faces(oppfaceId) = [];
 			end
+% 			f = f-1;
 			
 			[Geo, flag]= Rebuild(Geo, Set);
             if flag
@@ -102,7 +98,6 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
 			% DOFs when computing K and g ?
 			Geo.AssembleNodes = unique(Tnew);
 			Dofs = GetDOFs(Geo, Set);
-        	DofsR = Dofs;
 	
 			% TODO FIXME THIS SHOULD ALSO BE CHANGED ACCORDINGLY!
 			remodelDofs = zeros(0,1);
@@ -134,11 +129,10 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip32(Geo_n, Geo, Dofs, Set, newgId
 					Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
 				end
 			end
-			if  DidNotConverge
+			if  DidNotConverge || flag
             	Geo = Geo_backup;
 				Geo_n= Geo_n_backup;
             	fprintf('=>> Local problem did not converge -> 23 Flip rejected !! \n');
-            	return
 			end
         	return
 		end

@@ -72,6 +72,12 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
 			% TODO FIXME, is it necessary to make a full call to the object
 			% or by variable renaming is enough ??
 
+			if CheckConvexityCondition(Tnew, Geo_backup.Cells(c).T, Geo)
+            	Geo = Geo_backup;
+				Geo_n= Geo_n_backup;
+    			fprintf('=>> 23-Flip is not compatible rejected.\n');
+				continue
+			end
 			targetNodes = unique(targetTets);
 			for n_i = 1:length(targetNodes)
 				tNode = targetNodes(n_i);
@@ -114,12 +120,6 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
 	        Geo = BuildGlobalIds(Geo);
 			Geo_n = BuildGlobalIds(Geo_n);
 
-			if CheckConvexityCondition(Tnew, Geo_backup.Cells(c).T, Geo)
-            	Geo = Geo_backup;
-				Geo_n= Geo_n_backup;
-    			fprintf('=>> 23-Flip is not compatible rejected.\n');
-				continue
-			end
 			% TODO FIXME, I don't like this. Possible way is to take only 
 			% DOFs when computing K and g ?
 			Geo.AssembleNodes = unique(Tnew);
@@ -131,11 +131,11 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip23(Geo_n, Geo, Dofs, Set, newgId
 				news = find(sum(ismember(Tnew,ccc)==1,2));
 				remodelDofs(end+1:end+length(news)) = Geo.Cells(ccc).globalIds(end-length(news)+1:end,:);
 				for jj = 1:length(Geo.Cells(ccc).Faces)
-					Face = Geo.Cells(ccc).Faces(jj);
-					FaceTets = Geo.Cells(ccc).T(unique(Face.Tris),:);
+					Face_r = Geo.Cells(ccc).Faces(jj);
+					FaceTets = Geo.Cells(ccc).T(unique(Face_r.Tris),:);
 					hits = find(sum(ismember(Tnew,FaceTets),2)==4);
 					if length(hits)>3
-						remodelDofs(end+1) = Face.globalIds;
+						remodelDofs(end+1) = Face_r.globalIds;
 					end
 
 				end

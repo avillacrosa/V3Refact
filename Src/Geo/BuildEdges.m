@@ -10,10 +10,10 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
 		    i = sum(ismember(FaceTets, prev_tet),2)==3;
 		    i = i & ~ismember(1:length(FaceTets),vtk_order)';
 		    i = find(i);
-%             if isempty(i)
-%                 edges = [];
-%                 return
-%             end
+            if isempty(i)
+                edges = [];
+                return
+            end
 		    vtk_order(yi) = i(1);
 		    prev_tet = FaceTets(i(1),:);
         end

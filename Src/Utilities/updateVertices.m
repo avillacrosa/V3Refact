@@ -1,4 +1,4 @@
-function [Geo] = updateVertices(Geo, Set, dy_reshaped)
+function Geo = updateVertices(Geo, Set, dy_reshaped)
     for c = 1:Geo.nCells
         dY = dy_reshaped(Geo.Cells(c).globalIds,:);
         Geo.Cells(c).Y = Geo.Cells(c).Y + dY;

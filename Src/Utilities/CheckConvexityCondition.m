@@ -7,15 +7,20 @@ function [isConvex, tetID]=CheckConvexityCondition(Tnew,Ts, Geo)
 	
 	isConvex = false;
 	tetID = -1;
-	
+	for c = 1:Geo.nCells
+		Ts = Geo.Cells(c).T;
 	%% Checking if the same tetrahadron is already on T
-	[foundTets, tetFoundIds] = ismember(sort(Tnew, 2),sort(Ts, 2), 'rows');
-	if any(foundTets>0)
-    	tetID = tetFoundIds(foundTets);
-    	isConvex = true;
-    	return
+		[foundTets, tetFoundIds] = ismember(sort(Tnew, 2),sort(Ts, 2), 'rows');
+		if any(foundTets>0)
+			tetID = tetFoundIds(foundTets);
+			isConvex = true;
+			return
+		end
 	end
-	
+	allXs = zeros(length(Geo.Cells),3);
+	for c = 1:length(Geo.Cells)
+		allXs(c,:) = Geo.Cells(c).X;
+	end
 	%% Checking if Tnew overlap with other tetrahedra
 	for numTnew = 1:size(Tnew, 1)
     	currentTet = Tnew(numTnew, :);
@@ -27,10 +32,6 @@ function [isConvex, tetID]=CheckConvexityCondition(Tnew,Ts, Geo)
     	allXsExceptCurrentTet = 1:length(Geo.Cells);
     	allXsExceptCurrentTet(Tnew(numTnew, :)) = [];
     	% Checking if any point of the Xs are inside the tetrahedra
-		allXs = zeros(length(Geo.Cells),3);
-		for c = 1:length(Geo.Cells)
-			allXs(c,:) = Geo.Cells(c).X;
-		end
     	if any(tetShape.inShape(allXs(allXsExceptCurrentTet, 1), allXs(allXsExceptCurrentTet, 2), allXs(allXsExceptCurrentTet, 3)))
         	tetID = numTnew;
         	isConvex = true;

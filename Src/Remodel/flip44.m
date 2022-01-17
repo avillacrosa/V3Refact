@@ -5,16 +5,13 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip44(Geo_n, Geo, Dofs, Set, newgId
    for c = 1:Geo.nCells
 		% WHOLE REMODELLING WILL BE INSIDE HERE
 		for f = 1:length(Geo.Cells(c).Faces)
+% 			if f > length(Geo.Cells(c).Faces)
+% 				continue
+% 			end
 		    Ys = Geo.Cells(c).Y;
 		    Ts = Geo.Cells(c).T;
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
-			for t = 1:length(Face.Tris)
-				cond = sum(ismember(newgIds, Geo.Cells(c).globalIds(Face.Tris(t,:))))>=1;
-				if cond
-					nrgs(t) = 0;
-				end
-			end
 			if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4
 % 			if (max(nrgs)<Set.RemodelTol && min(nrgs)<Set.RemodelTol/1.5) || length(unique(Face.Tris))~=4
                 continue
@@ -131,11 +128,10 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = flip44(Geo_n, Geo, Dofs, Set, newgId
 					Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
 				end
 			end
-			if  DidNotConverge
+			if  DidNotConverge || flag
             	Geo = Geo_backup;
 				Geo_n= Geo_n_backup;
             	fprintf('=>> Local problem did not converge -> 23 Flip rejected !! \n');
-            	return
 			end
             return
 		end

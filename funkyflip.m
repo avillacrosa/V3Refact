@@ -1,9 +1,9 @@
 clc; close all; clear
 
-% load('funkyflip2.mat');
-% % while 1
+load('deniedflip.mat');
+% while 1
 % if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-%     [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_n, Geo, Dofs, Set);
+    [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_n, Geo, Dofs, Set);
 %     tr    = t;
 % end
 % PostProcessingVTK(Geo, Set, -15)
@@ -13,8 +13,8 @@ clc; close all; clear
 % 
 % [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set);
 % [g,K] = KgGlobal(Geo_n, Geo, Set); % TODO FIXME, Isn't this bad btw ?
-load('preNR.mat');  
-[Geo, g, K, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t);
+% % load('preNR.mat');  
+% [Geo, g, K, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t);
 % if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) && Set.nu/Set.nu0 == 1
 % 	fprintf('STEP %i has converged ...\n',Set.iIncr)
 % %     PostProcessingVTK(Geo, Set, -15)

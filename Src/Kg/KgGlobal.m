@@ -1,17 +1,15 @@
-function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
+function [g,K,Geo,E] = KgGlobal(Geo_n, Geo, Set)
 	% The residual g and Jacobian K of all energies
 	%% Calculate basic information
 	
 	% TODO FIXME, I think this should go out of here. Either after a step
 	% converged or before entering KgGlobal (last option preferred I think)
     for c = 1:Geo.nCells
-        Cell = Geo.Cells(c);
-        for f = 1:length(Cell.Faces)
-            Face = Geo.Cells(c).Faces(f);
-	        [Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea] = ComputeFaceArea(Face, Cell.Y);
+        for f = 1:length(Geo.Cells(c).Faces)
+	        [Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea] = ComputeFaceArea(Geo.Cells(c).Faces(f), Geo.Cells(c).Y);
 % 			Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea
         end
-        Geo.Cells(c).Vol = ComputeCellVolume(Cell);
+        Geo.Cells(c).Vol = ComputeCellVolume(Geo.Cells(c));
 %         fprintf("%.8f ", Geo.Cells(c).Vol)
     end
 %     fprintf("\n")
@@ -45,8 +43,8 @@ function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	%% Substrate
 	% TODO
 	%% Return
-    if nargout > 1
-	    fprintf("%.16f %.16f %.16f %.16f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
-	    fprintf("%.16f %.16f %.16f %.16f\n", norm(gs), norm(gv), norm(gf), norm(gB));
-    end
+%     if nargout > 1
+% 	    fprintf("%.16f %.16f %.16f %.16f\n", norm(Ks), norm(Kv), norm(Kf), norm(KB));
+% 	    fprintf("%.16f %.16f %.16f %.16f\n", norm(gs), norm(gv), norm(gf), norm(gB));
+%     end
 end

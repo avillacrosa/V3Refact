@@ -39,12 +39,12 @@ function Geo = BuildGlobalIds(Geo)
         % TODO FIXME IS THE USE OF THIS VARIABLE NECESSARY???
         ntris = 0;
         for f = 1:length(Cell.Faces)
-            if length(Geo.Cells(ci).Faces(f).Tris) ~= 3
+%             if length(Geo.Cells(ci).Faces(f).Tris) ~= 3
                 Geo.Cells(ci).Faces(f).globalIds = gIdsf(f)-ntris;
-            else
-                Geo.Cells(ci).Faces(f).globalIds = "pls";
-                ntris = ntris + 1;
-            end
+%             else
+%                 Geo.Cells(ci).Faces(f).globalIds = "pls";
+%                 ntris = ntris + 1;
+%             end
         end
         
 		gIdsTot = gIdsTot + nz;
