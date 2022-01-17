@@ -1,6 +1,5 @@
-function [Geo, flag] = Rebuild(Geo, Set)
+function Geo = Rebuild(Geo, Set)
 	% TODO FIXME, whole function needs to be rethought
-    flag = false;
 	for cc = 1:Geo.nCells
         Cell = Geo.Cells(cc);
         Neigh_nodes = unique(Geo.Cells(cc).T);
@@ -25,10 +24,6 @@ function [Geo, flag] = Rebuild(Geo, Set)
 			else
 				% TODO FIXME, I think this is an unnecessary call most of the time...
 				Geo.Cells(cc).Faces(j).Tris	= BuildEdges(Geo.Cells(cc).T, face_ids, Geo.Cells(cc).Faces(j).Centre, Geo.Cells(cc).X, Geo.Cells(cc).Y);
-                if isempty(Geo.Cells(cc).Faces(j).Tris)
-                    flag = true;
-                    return;
-                end
             	Geo.Cells(cc).Faces(j).InterfaceType	= BuildInterfaceType(ij, Geo.XgID);
                 Geo.Cells(cc).Faces(j).ij = ij;
 				[Geo.Cells(cc).Faces(j).Area, Geo.Cells(cc).Faces(j).TrisArea] = ComputeFaceArea(Geo.Cells(cc).Faces(j), Geo.Cells(cc).Y);	

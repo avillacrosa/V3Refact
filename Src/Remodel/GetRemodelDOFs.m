@@ -1,4 +1,4 @@
-function Dofs = GetRemodelDOFs(Tnew, Dofs, Geo)
+function [Dofs, Geo] = GetRemodelDOFs(Tnew, Dofs, Geo)
 	remodelDofs = zeros(0,1);
 	for ccc = 1:Geo.nCells
 		news = find(sum(ismember(Tnew,ccc)==1,2));

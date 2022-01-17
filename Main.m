@@ -48,14 +48,10 @@ while t<=Set.tend
     else 
         fprintf('Convergence was not achieved ... \n');
         Geo = Geo_b;
-		% If all iterations where exhausted, use *3 the initial max
-		% iterations, then multiply nu per 10 and recalculate
         if Set.iter == Set.MaxIter0 
             fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
             Set.MaxIter=Set.MaxIter0*3;
             Set.nu=10*Set.nu0;
-		% If all iterations where exhausted, w.r.t. 3*initial max
-		% iterations, 
         elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
             fprintf('Second strategy ---> Repeating the step with half step-size...\n');
             Set.MaxIter=Set.MaxIter0;

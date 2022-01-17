@@ -15,5 +15,5 @@ function [Ynew, Tnew] = YFlip32(Ys, Ts, YsToChange, Geo)
 	for ni = 1:length(n)
 		Xs(ni,:) = Geo.Cells(n(ni)).X;
 	end
-	Ynew=Flip32(Ys(oV,:),Xs);
+	Ynew=DoFlip32(Ys(oV,:),Xs);
 end
