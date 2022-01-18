@@ -1,5 +1,4 @@
 function Face = BuildFace(ci, cj, Cell, CellJ, XgID, Set)
-	
 	ij			= [ci, cj];
 	face_ids	= sum(ismember(Cell.T,ij),2)==2; 
 

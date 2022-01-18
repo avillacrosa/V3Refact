@@ -6,7 +6,6 @@ function Geo = BuildGlobalIds(Geo)
 		Cell = Geo.Cells(ci);
 		gIds  = zeros(length(Cell.Y), 1);
         gIdsf = zeros(length(Cell.Faces), 1);
-		% TODO FIXME, maybe we could iterate over neighbors only?
 		for cj = 1:ci-1 
 			ij = [ci, cj];
 			CellJ = Geo.Cells(cj);
@@ -14,12 +13,8 @@ function Geo = BuildGlobalIds(Geo)
 			face_ids_j	= sum(ismember(CellJ.T,ij),2)==2;
 			gIds(face_ids_i) = CellJ.globalIds(face_ids_j);
 
-            % find face i
             for f = 1:length(Cell.Faces)
                 Face = Cell.Faces(f);
-%                 if length(Cell.Faces(f).Tris)==3
-%                     continue
-%                 end
                 if sum(ismember(Face.ij, ij),2) == 2
                     for f2 = 1:length(CellJ.Faces)
                         FaceJ = CellJ.Faces(f2);
@@ -36,19 +31,12 @@ function Geo = BuildGlobalIds(Geo)
 
         nzf = length(gIdsf(gIdsf==0));
 		gIdsf(gIdsf==0) = gIdsTotf:(gIdsTotf+nzf-1);
-        % TODO FIXME IS THE USE OF THIS VARIABLE NECESSARY???
-        ntris = 0;
         for f = 1:length(Cell.Faces)
-%             if length(Geo.Cells(ci).Faces(f).Tris) ~= 3
-                Geo.Cells(ci).Faces(f).globalIds = gIdsf(f)-ntris;
-%             else
-%                 Geo.Cells(ci).Faces(f).globalIds = "pls";
-%                 ntris = ntris + 1;
-%             end
+                Geo.Cells(ci).Faces(f).globalIds = gIdsf(f);
         end
         
 		gIdsTot = gIdsTot + nz;
-        gIdsTotf = gIdsTotf + nzf - ntris;
+        gIdsTotf = gIdsTotf + nzf;
     end
     Geo.numY = gIdsTot - 1;
     for c = 1:Geo.nCells

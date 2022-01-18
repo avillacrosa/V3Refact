@@ -24,15 +24,16 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, S
     	alpha = LineSearch(Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes
     	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY))';
-    	Geo = updateVertices(Geo, Set, dy_reshaped);
+    	Geo = UpdateVertices(Geo, Set, dy_reshaped);
+		Geo = UpdateFacesArea(Geo);
 
-        if Set.nu > Set.nu0 && gr<Set.tol
+        if Set.nu > Set.nu0 && gr<1e-8
             Set.nu = max(Set.nu/2, Set.nu0);
         end
     	%% ----------- Compute K, g ---------------------------------------
-    	[g,K,Geo,Energy]=KgGlobal(Geo_n, Geo, Set);
+    	[g,K,Energy]=KgGlobal(Geo_n, Geo, Set);
     	dyr=norm(dy(dof)); gr=norm(g(dof));
-    	fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',Set.iIncr,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
+    	fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
 % 		fprintf(Set.fout,'Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
 
     	Set.iter=Set.iter+1;

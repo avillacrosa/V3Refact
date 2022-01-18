@@ -1,20 +1,4 @@
-function [g,K,Geo,E] = KgGlobal(Geo_n, Geo, Set)
-	% The residual g and Jacobian K of all energies
-	%% Calculate basic information
-	
-	% TODO FIXME, I think this should go out of here. Either after a step
-	% converged or before entering KgGlobal (last option preferred I think)
-    for c = 1:Geo.nCells
-        for f = 1:length(Geo.Cells(c).Faces)
-	        [Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea] = ComputeFaceArea(Geo.Cells(c).Faces(f), Geo.Cells(c).Y);
-% 			Geo.Cells(c).Faces(f).Area, Geo.Cells(c).Faces(f).TrisArea
-        end
-        Geo.Cells(c).Vol = ComputeCellVolume(Geo.Cells(c));
-%         fprintf("%.8f ", Geo.Cells(c).Vol)
-    end
-%     fprintf("\n")
-	% [Cell] = Cell.computeEdgeLengths(Y);
-	% [Cell] = Cell.computeEdgeLocation(Y);
+function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
 	%% Surface Energy
 	[gs,Ks,ES]=KgSurfaceCellBasedAdhesion(Geo,Set);
 	%% Volume Energy

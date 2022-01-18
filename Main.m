@@ -3,8 +3,8 @@ addpath(genpath('Src'));
 
 disp('------------- SIMULATION STARTS -------------');
 
-% Stretch
-Compress
+Stretch
+% Compress
 
 Set=SetDefault(Set);
 InitiateOutputFolder(Set);
@@ -30,7 +30,8 @@ while t<=Set.tend
 	Set.iIncr=numStep;
 
     [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set);
-	[g,K,Geo] = KgGlobal(Geo_n, Geo, Set); % TODO FIXME, Isn't this bad btw ?
+	Geo = UpdateFacesArea(Geo);
+	[g,K,E] = KgGlobal(Geo_n, Geo, Set); % TODO FIXME, Isn't this bad btw ?
 	[Geo, g, K, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t);
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) && Set.nu/Set.nu0 == 1
 		fprintf('STEP %i has converged ...\n',Set.iIncr)

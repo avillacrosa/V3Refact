@@ -9,16 +9,16 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
     % converged only when the prescribed value of global viscosity (Set.nu) is reached.
     
     fprintf('=====>> Solving Local Problem....\n');
+    Geo.Remodelling = true;
     Geop=Geo;
     IncreaseEta=true;
     original_nu=Set.nu;
     
     Set.nu0=Set.nu;
     Set.nu=Set.nu_LP_Initial;
-    Geo.Remodelling = true;
     Set.MaxIter=Set.MaxIter0/2;
     while 1
-        [g,K, Geo]=KgGlobal(Geo_n, Geo, Set);
+        [g,K]=KgGlobal(Geo_n, Geo, Set);
         
         dy=zeros((Geo.numF+Geo.numY)*3);
         dyr=norm(dy(Dofs.Remodel));

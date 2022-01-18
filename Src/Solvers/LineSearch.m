@@ -3,25 +3,10 @@ function [alpha]=LineSearch(Geo_n, Geo, Dofs, Set, gc, dy)
 	%% Update mechanical nodes
 	dy_reshaped = reshape(dy, 3, (Geo.numF+Geo.numY))';
 	
-	% TODO FIXME why ???
-	[Geo] = updateVertices(Geo, Set, dy_reshaped);
-	
-	try
-    	g=KgGlobal(Geo_n, Geo, Set);
-	catch ME
-		ME.rethrow();
-%     	if (strcmp(ME.identifier,'KgBulk:invertedTetrahedralElement'))
-%         	%% Correct inverted Tets
-%         	[Y, Cell] = correctInvertedMechTets(ME, dy, Y, Cell, Set);
-%         	
-%         	% Run again
-%         	[g]=KgGlobal(Cell, SCn, Y0, Y, Yn, Set, CellInput);
-%     	else
-%         	ME.rethrow();
-%     	end
-	end
-	% TODO FXIME, there might not be necessary to take the full dofs
-	% but only the remodelled ones!! (we'll see later...)
+	[Geo] = UpdateVertices(Geo, Set, dy_reshaped);
+	Geo   = UpdateFacesArea(Geo);
+
+	g=KgGlobal(Geo_n, Geo, Set);
 	dof = Dofs.Free;
 	gr0=norm(gc(dof));   
 	gr=norm(g(dof)); 

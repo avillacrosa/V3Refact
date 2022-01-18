@@ -16,10 +16,6 @@ function [Ynew, Tnew] = YFlip23(Ys, Ts, YsToChange, Geo)
 	
 	ghostNodes = ismember(Tnew,Geo.XgID);
 	ghostNodes = all(ghostNodes,2);
-	if any(ghostNodes)
-		fprintf('=>> Flips 2-2 are not allowed for now\n');
-		return
-	end
 	
 	Ynew=DoFlip23(Ys(YsToChange,:),Geo,n3);
 	Ynew(ghostNodes,:)=[];

@@ -1,13 +1,17 @@
-function [Geo_n, Geo, Dofs, Set, newgIds] = Flip32(Geo_n, Geo, Dofs, Set, newgIds)
+function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip32(Geo_n, Geo, Dofs, Set, newYgIds)
 	for c = 1:Geo.nCells
 		for f = 1:length(Geo.Cells(c).Faces)
     	    Ys = Geo.Cells(c).Y;
     	    Ts = Geo.Cells(c).T;
+			% TODO FIXME, this should be a while? What happens with flip23?
+			if f > length(Geo.Cells(c).Faces)
+				break
+			end
 			Face = Geo.Cells(c).Faces(f);
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			Geo_backup = Geo; Geo_n_backup = Geo_n;
 
-            if max(nrgs)<Set.RemodelTol || length(unique(Face.Tris)) ~= 3
+            if max(nrgs)<Set.RemodelTol || length(unique(Face.Tris)) ~= 3 || ismember(Face.globalIds, newYgIds)
             	continue
             end
 
@@ -18,34 +22,41 @@ function [Geo_n, Geo, Dofs, Set, newgIds] = Flip32(Geo_n, Geo, Dofs, Set, newgId
 			Geo   = ReplaceYs(targetTets, Tnew, Ynew, Geo);
 			Geo_n = ReplaceYs(targetTets, Tnew, Ynew, Geo_n);
 
-            Geo   = RemoveFaces(Face, Geo);
-            Geo_n = RemoveFaces(Face, Geo_n);
+            Geo   = RemoveFaces(f, Face.ij, Geo);
+            Geo_n = RemoveFaces(f, Face.ij, Geo_n);
 
 			Geo   = Rebuild(Geo, Set);
 			Geo_n = Rebuild(Geo_n, Set);
 
         	Geo   = BuildGlobalIds(Geo);
 			Geo_n = BuildGlobalIds(Geo_n);
-	
+
+			Geo   = UpdateFacesArea(Geo);
+			Geo_n = UpdateFacesArea(Geo_n);
+
             if ~CheckConvexityCondition(Tnew,Geo_backup) && CheckTris(Geo)
     			fprintf('=>> 32 Flip.\n');
 				Dofs = GetDOFs(Geo, Set);
 				[Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
 				[Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_n, Geo, Dofs, Set);
-                for n_i = 1:length(targetNodes)
+				targetNodes = unique(targetTets);
+				if DidNotConverge
+					Geo   = Geo_backup;
+					Geo_n = Geo_n_backup;
+					fprintf('=>> 32-Flip rejected: did not converge\n');
+					continue
+				end
+				for n_i = 1:length(unique(targetTets))
 			        tNode = targetNodes(n_i);
 			        news = find(sum(ismember(Tnew,tNode)==1,2));
 			        if ~ismember(tNode, Geo.XgID)
 				        Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
 			        end
-                end
-                if DidNotConverge
-					Geo   = Geo_backup;
-					Geo_n = Geo_n_backup;
-					fprintf('=>> 32-Flip rejected: did not converge\n');
-					continue
-                end
-        	    return
+				end
+				newYgIds = unique([newYgIds; Geo.AssemblegIds]);
+				Geo   = UpdateFacesArea(Geo);
+				Geo_n = UpdateFacesArea(Geo_n);
+%         	    return
             else
                 Geo   = Geo_backup;
 				Geo_n = Geo_n_backup;
