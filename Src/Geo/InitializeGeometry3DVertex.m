@@ -1,6 +1,6 @@
 function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	%% Build nodal mesh 
-	X = buildTopo();
+	X = BuildTopo();
 	Geo.nCells = length(X);
 
 	%% Centre Nodal position at (0,0)
@@ -17,9 +17,6 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	% removed from X
 	X    = X(unique(Twg),:);
 
-	% TODO FIXME Might be bad. Ideally use length of X before selecting
-	% unconnected nodes zeros(length(X),1)
-% 	conv = zeros(max(Twg,[],"all"),1);
 	conv = zeros(max(max(Twg)),1);
 
 	conv(unique(Twg)) = 1:size(X);

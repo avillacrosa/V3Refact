@@ -11,9 +11,9 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_n, Geo, Dofs, Set, newYg
 			nrgs = ComputeTriEnergy(Face, Ys, Set);
 			Geo_backup = Geo; Geo_n_backup = Geo_n;
 		
-			% The last ismember condition is necessary because if a previous 44 flip
-			% happens, the new remodelled and approximated face might be in a cell
-			% not yet reviewed.
+			% The last ismember condition is necessary if a previous 44 flip
+			% happens, as the new remodelled and approximated face might 
+			% be in a cell not yet reviewed.
 			if max(nrgs)<Set.RemodelTol || min(nrgs)<Set.RemodelTol*1e-4 || length(unique(Face.Tris))~=4 || ismember(Face.globalIds, newYgIds)
                 continue
 			end
@@ -37,7 +37,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_n, Geo, Dofs, Set, newYg
 			Geo   = UpdateFacesArea(Geo);
 			Geo_n = UpdateFacesArea(Geo_n);
 
-            if ~CheckConvexityCondition(Tnew,Geo_backup) && CheckTris(Geo)
+            if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
     			fprintf('=>> 44 Flip.\n');
 				Dofs = GetDOFs(Geo, Set);
 				[Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);

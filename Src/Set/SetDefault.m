@@ -65,7 +65,7 @@ function Set = SetDefault(Set)
 	DSet.SaveWorkspace				= false;
 	DSet.SaveSetting				= false;
 	%% ====================== Add missing fields to Set ===================
-	Set = addDefault(Set, DSet);
+	Set = AddDefault(Set, DSet);
 	%% ========================= Derived variables ========================
     Set.lambdaS3					= Set.lambdaS2;
     Set.lambdaS4					= Set.lambdaS2;

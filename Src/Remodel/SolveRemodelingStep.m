@@ -24,7 +24,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel)); 
         fprintf('Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);
-        [Geo, g, K, Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, -1, -1);
+        [Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_n, Geo, Dofs, Set, K, g, -1, -1);
         if IncreaseEta && (gr>Set.tol || dyr>Set.tol)
             fprintf('Convergence was not achieved ... \n');
             fprintf('First strategy ---> Restart iterating while higher viscosity... \n');

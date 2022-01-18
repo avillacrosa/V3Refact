@@ -34,7 +34,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip32(Geo_n, Geo, Dofs, Set, newYg
 			Geo   = UpdateFacesArea(Geo);
 			Geo_n = UpdateFacesArea(Geo_n);
 
-            if ~CheckConvexityCondition(Tnew,Geo_backup) && CheckTris(Geo)
+            if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
     			fprintf('=>> 32 Flip.\n');
 				Dofs = GetDOFs(Geo, Set);
 				[Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
