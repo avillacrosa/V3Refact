@@ -1,4 +1,4 @@
-Geo.nx = 1;
+Geo.nx = 3;
 Geo.ny = 3;
 
 Set.lambdaV = 5;
@@ -14,4 +14,4 @@ Set.VFixd = -1;
 Set.lambdaS1 = 1;
 Set.lambdaS2 = 0.5; 
 
-Set.OutputFolder='Result/Compress';
+Set.OutputFolder='Result/Extrude';

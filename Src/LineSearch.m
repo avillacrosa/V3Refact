@@ -1,12 +1,12 @@
-function [alpha]=LineSearch(Geo_n, Geo, Dofs, Set, gc, dy)
+function [alpha]=LineSearch(Geo_0, Geo_n, Geo, Dofs, Set, gc, dy)
 	
 	%% Update mechanical nodes
-	dy_reshaped = reshape(dy, 3, (Geo.numF+Geo.numY))';
+	dy_reshaped = reshape(dy, 3, (Geo.numF+Geo.numY+Geo.nCells))';
 	
 	[Geo] = UpdateVertices(Geo, Set, dy_reshaped);
 	Geo   = UpdateFacesArea(Geo);
 
-	g=KgGlobal(Geo_n, Geo, Set);
+	g=KgGlobal(Geo_0, Geo_n, Geo, Set);
 	dof = Dofs.Free;
 	gr0=norm(gc(dof));   
 	gr=norm(g(dof)); 

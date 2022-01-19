@@ -1,8 +1,7 @@
 function [g,K,EnergyF]=KgViscosity(Geo_n, Geo, Set)
-    K=(Set.nu/Set.dt).*eye((Geo.numF+Geo.numY)*3);
+    K=(Set.nu/Set.dt).*eye((Geo.numY+Geo.numF+Geo.nCells)*3);
 	% TODO FIXME placeholder...
-	g = zeros((Geo.numF+Geo.numY)*3,1);
-	dY = zeros(Geo.numF+Geo.numY,3);
+	dY = zeros(Geo.numF+Geo.numY+Geo.nCells,3);
 	% TODO FIXME BAD!
 	for c = 1:Geo.nCells
         % THERE WAS A HARD TO DEBUG ERROR HERE... 
@@ -21,8 +20,9 @@ function [g,K,EnergyF]=KgViscosity(Geo_n, Geo, Set)
 			    dY(Face.globalIds,:) = (Face.Centre-Face_n.Centre);
             end
 		end
+		dY(Cell.cglobalIds,:) = (Cell.X-Cell_n.X);
 	end
-	g = (Set.nu/Set.dt).*reshape(dY', (Geo.numF+Geo.numY)*3, 1);
+	g = (Set.nu/Set.dt).*reshape(dY', (Geo.numF+Geo.numY+Geo.nCells)*3, 1);
 	EnergyF = (1/2)*(g')*g/Set.nu;
 
 end

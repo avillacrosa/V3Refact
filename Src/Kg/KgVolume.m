@@ -8,7 +8,6 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 	%% Loop over Cells 
 	% Analytical residual g and Jacobian K
 	% TODO FIXME hard code
-	Set.lambdaV = 5;
 	for c=1:Geo.nCells
 		if Geo.Remodelling
 			if ~ismember(c,Geo.AssembleNodes)
@@ -45,7 +44,6 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 				end
 				[gs,Ks]=gKDet(y1, y2, y3); 
 				ge=Assembleg(ge,gs,nY); 
-% 				fprintf("%.15f %.2f %.2f %.2f %d %d %d \n", norm(g), y3, c, f, t);
 				K = AssembleK(K,Ks*fact/6,nY);
 				if length(Tris) == 3
 					break

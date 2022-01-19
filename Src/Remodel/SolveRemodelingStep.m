@@ -1,4 +1,4 @@
-function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
+function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set)
     % This function solves local problem to obtain the position of the newly
     % remodeled vertices with prescribed settings (Set.***_LP), e.g.
     % Set.lambda_LP. 
@@ -18,13 +18,12 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
     Set.nu=Set.nu_LP_Initial;
     Set.MaxIter=Set.MaxIter0/2;
     while 1
-        [g,K]=KgGlobal(Geo_n, Geo, Set);
+        [g,K]=KgGlobal(Geo_0, Geo_n, Geo, Set);
         
-        dy=zeros((Geo.numF+Geo.numY)*3);
+        dy=zeros((Geo.numF+Geo.numY+Geo.nCells)*3);
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel)); 
-        fprintf('Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);
-        [Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_n, Geo, Dofs, Set, K, g, -1, -1);
+        [Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, -1, -1);
         if IncreaseEta && (gr>Set.tol || dyr>Set.tol)
             fprintf('Convergence was not achieved ... \n');
             fprintf('First strategy ---> Restart iterating while higher viscosity... \n');
@@ -39,13 +38,17 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
             DidNotConverge=true;
             Set.nu=original_nu;
             break;
-        else 
-            Set.MaxIter=Set.MaxIter0;
-            fprintf('=====>> Local Problem converged in %i iterations.\n',Set.iter);
-            DidNotConverge=false;
-            Set.nu=original_nu;
-			Geo.Remodelling = false;
-            break;
+		else 
+			if Set.nu/Set.nu0 == 1
+				Set.MaxIter=Set.MaxIter0;
+				fprintf('=====>> Local Problem converged in %i iterations.\n',Set.iter);
+				DidNotConverge=false;
+				Set.nu=original_nu;
+				Geo.Remodelling = false;
+				break;
+			else
+				 Set.nu = max(Set.nu/2, Set.nu0);
+			end
         end
     end 
 end 

@@ -45,4 +45,7 @@ function Geo = BuildGlobalIds(Geo)
         end
     end
     Geo.numF = gIdsTotf - 1;
+    for c = 1:Geo.nCells
+		Geo.Cells(c).cglobalIds = c + Geo.numY + Geo.numF;
+    end
 end

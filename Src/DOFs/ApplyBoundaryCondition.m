@@ -1,10 +1,10 @@
-function [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set)
+function [Geo, Dofs] = ApplyBoundaryCondition(t, Geo, Dofs, Set)
 %APPLYBOUNDARYCONDITION Summary of this function goes here
 %   Detailed explanation goes here
 
     if Set.BC==1 && t<=Set.TStopBC && t>=Set.TStartBC && Set.ApplyBC
         % TODO FIXME, dimP, unused, but it should be...
-        [dimP, numP] = ind2sub([3, Geo.numY+Geo.numF],Dofs.FixP);
+        [dimP, numP] = ind2sub([3, Geo.numY+Geo.numF+Geo.nCells],Dofs.FixP);
         for c = 1:Geo.nCells
             prescYi  = ismember(Geo.Cells(c).globalIds, numP);
             Geo.Cells(c).Y(prescYi,2) = Geo.Cells(c).Y(prescYi,2) + Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
@@ -47,7 +47,7 @@ function [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set)
 		end
 		Set.VPrescribed = maxY-Set.dx/((Set.TStopBC-Set.TStartBC)/Set.dt);
 		Dofs = GetDOFs(Geo, Set);
-		[dimP, numP] = ind2sub([3, Geo.numY+Geo.numF],Dofs.FixP);
+		[dimP, numP] = ind2sub([3, Geo.numY+Geo.numF+Geo.nCells],Dofs.FixP);
 		for c = 1:Geo.nCells
             prescYi  = ismember(Geo.Cells(c).globalIds, numP);
             Geo.Cells(c).Y(prescYi,2) = Set.VPrescribed;

@@ -1,13 +1,11 @@
-function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t)
+function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t)
 	% TODO FIXME There should be a cleaner way for this...
 	if Geo.Remodelling
-    	% Changed by Adria. Typo
-	%     dfs=Dof.Remodel;
     	dof=Dofs.Remodel;
 	else
     	dof=Dofs.Free;
 	end
-	dy=zeros((Geo.numY+Geo.numF)*3, 1);
+	dy=zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
 	dyr=norm(dy(dof)); gr=norm(g(dof));
 	gr0=gr;
 
@@ -21,24 +19,18 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, S
 	ig = 1;
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     	dy(dof)=-K(dof,dof)\g(dof);
-    	alpha = LineSearch(Geo_n, Geo, Dofs, Set, g, dy);
+    	alpha = LineSearch(Geo_0, Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes
-    	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY))';
+    	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY+Geo.nCells))';
     	Geo = UpdateVertices(Geo, Set, dy_reshaped);
 		Geo = UpdateFacesArea(Geo);
-
-        if Set.nu > Set.nu0 && gr<1e-8
-            Set.nu = max(Set.nu/2, Set.nu0);
-        end
     	%% ----------- Compute K, g ---------------------------------------
-    	[g,K,Energy]=KgGlobal(Geo_n, Geo, Set);
+    	[g,K,Energy]=KgGlobal(Geo_0, Geo_n, Geo, Set);
     	dyr=norm(dy(dof)); gr=norm(g(dof));
-    	fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
-% 		fprintf(Set.fout,'Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
+    	fprintf('Step:  % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
 
     	Set.iter=Set.iter+1;
 		auxgr(ig+1)=gr;
-		% TODO FIXME, what even is this ?!
     	if ig ==2
         	ig=0;
     	else

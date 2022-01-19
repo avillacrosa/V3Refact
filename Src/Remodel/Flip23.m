@@ -1,4 +1,4 @@
-function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip23(Geo_n, Geo, Dofs, Set, newYgIds)	
+function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip23(Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)	
 	for c = 1:Geo.nCells
 		for f = 1:length(Geo.Cells(c).Faces)
 		    Ys = Geo.Cells(c).Y;
@@ -46,7 +46,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip23(Geo_n, Geo, Dofs, Set, newYg
 				fprintf('=>> 23 Flip.\n');
 				Dofs = GetDOFs(Geo, Set);
 				[Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
-				[Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_n, Geo, Dofs, Set);
+				[Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
 				if DidNotConverge
 					Geo   = Geo_backup;
 					Geo_n = Geo_n_backup;

@@ -3,8 +3,10 @@ addpath(genpath('Src'));
 
 disp('------------- SIMULATION STARTS -------------');
 
-Stretch
+% Stretch
 % Compress
+StretchBulk
+% Extrude
 
 Set=SetDefault(Set);
 InitiateOutputFolder(Set);
@@ -14,13 +16,14 @@ Dofs = GetDOFs(Geo, Set);
 Geo.Remodelling = false;
 
 t=0; tr=0; tp=0;
+Geo_0   = Geo;
 Geo_n   = Geo;
 numStep = 1;
 
 PostProcessingVTK(Geo, Set, numStep)
 while t<=Set.tend
 	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-        [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_n, Geo, Dofs, Set);
+        [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
         tr    = t;
 	end
 	Geo_b = Geo;
@@ -28,21 +31,25 @@ while t<=Set.tend
 
     [Geo, Dofs] = ApplyBoundaryCondition(t, Geo, Dofs, Set);
 	Geo = UpdateFacesArea(Geo);
-	[g,K,E] = KgGlobal(Geo_n, Geo, Set); 
-	[Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t);
-    if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) && Set.nu/Set.nu0 == 1
-		fprintf('STEP %i has converged ...\n',Set.iIncr)
+	[g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set); 
+	[Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
+    if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) 
+		if Set.nu/Set.nu0 == 1
+			fprintf('STEP %i has converged ...\n',Set.iIncr)
 
-        Geo = BuildXFromY(Geo_n, Geo);
-		tp=t;
+			Geo = BuildXFromY(Geo_n, Geo);
+			tp=t;
 
-        t=t+Set.dt;
-		Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
-		Set.MaxIter=Set.MaxIter0;
-		Set.ApplyBC=true;
-        numStep=numStep+1;
-        Geo_n = Geo;
-        PostProcessingVTK(Geo, Set, numStep)
+			t=t+Set.dt;
+			Set.dt=min(Set.dt+Set.dt*0.5, Set.dt0);
+			Set.MaxIter=Set.MaxIter0;
+			Set.ApplyBC=true;
+			numStep=numStep+1;
+			Geo_n = Geo;
+			PostProcessingVTK(Geo, Set, numStep)
+		else			
+            Set.nu = max(Set.nu/2, Set.nu0);
+		end
     else 
         fprintf('Convergence was not achieved ... \n');
         Geo = Geo_b;

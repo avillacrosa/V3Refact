@@ -1,13 +1,14 @@
-Geo = struct();
+Geo.nx = 1;
+Geo.ny = 3;
 
-Set.tend=300;
-Set.Nincr=300;
+Set.lambdaV = 5;
+
+Set.tend=50;
+Set.Nincr=50;
 Set.BC = 1;
-Set.dx = 2; % compression only (2 for stretching)
+Set.dx = 2; 
 
 Set.lambdaS1 = 1;
-Set.lambdaS2 = 0.8; % compression only. 0.8 for stretch
-
-Set.ApplyBC=true;
+Set.lambdaS2 = 0.8; 
 
 Set.OutputFolder='Result/Stretch';

@@ -1,6 +1,6 @@
 function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	%% Build nodal mesh 
-	X = BuildTopo();
+	X = BuildTopo(Geo.nx, Geo.ny, 0);
 	Geo.nCells = length(X);
 
 	%% Centre Nodal position at (0,0)
@@ -23,7 +23,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	Twg = conv(Twg);
 
 	% TODO FIXME This does not seem optimal...
-	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds"];
+	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds"];
 	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0", "TrisArea"];
 
 	Geo.Cells = BuildStructArray(length(X), CellFields);
@@ -60,7 +60,12 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
         Cell = Geo.Cells(c);
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Cell.Faces(f);
-            Set.BarrierTri0=min([Face.TrisArea; Set.BarrierTri0]);
+			% TODO FIXME bad programming...
+			if length(Face.Tris)==3
+				Set.BarrierTri0=min([Face.TrisArea(1); Set.BarrierTri0]);
+			else
+				Set.BarrierTri0=min([Face.TrisArea; Set.BarrierTri0]);
+			end
         end
     end
     Set.BarrierTri0=Set.BarrierTri0/10;

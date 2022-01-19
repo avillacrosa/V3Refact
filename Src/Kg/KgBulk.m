@@ -1,99 +1,69 @@
-function [g, K, Cell, Energy]=KgBulk(Cell, Y, Y0, Set)
-%KGBULK Summary of this function goes here
-%   Detailed explanation goes here
-%   g: is a vector
-%   K: is a matrix
+function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 
-%% Initialize
-if nargout > 1
-    if Set.Sparse == 2 %Manual sparse
-        [g, Energy, ncell, K, si, sj, sk, sv] = initializeKg(Cell, Set);
-    else
-        [g, Energy, ncell, K] = initializeKg(Cell, Set);
-    end
-else
-    [g, Energy, ncell] = initializeKg(Cell, Set);
-end
+	[g, K] = initializeKg(Geo, Set);
+	
+	EnergyBulk=0;
+	errorInverted = [];
 
-errorInverted = [];
-
-%% K and g calculation per Cell
-for numCell = 1:ncell
-    if ~Cell.AssembleAll
-        if ~ismember(Cell.Int(numCell),Cell.AssembleNodes)
-            continue
-        end
-    end    
-    if Cell.DebrisCells(numCell) %% Is this oK???
-        continue;
-    end
-    if Set.Sparse > 0
-        ge=sparse(size(g, 1), 1);
-    else
-        ge=zeros(size(g, 1), 1);
-    end
-    cellNuclei = Cell.Centre(numCell, :);
-    cellNuclei0 = Cell.Centre0(numCell, :);
-    % Loop over Cell-face-triangles
-    Tris=Cell.Tris{numCell};
-    for ntriangle=1:size(Tris,1)
-        currentTet_ids=[Tris(ntriangle,:) numCell+Set.NumMainV+Set.NumAuxV];        
-        Y1=Y.DataRow(currentTet_ids(1),:);
-        Y0_1 = Y0.DataRow(currentTet_ids(1),:);
-        Y2=Y.DataRow(currentTet_ids(2),:);
-        Y0_2 = Y0.DataRow(currentTet_ids(2),:);
-        if currentTet_ids(3)<0
-            currentTet_ids(3)=abs(currentTet_ids(3));
-            Y3=Y.DataRow(currentTet_ids(3),:);
-            Y0_3 = Y0.DataRow(currentTet_ids(3),:);
-        else 
-            Y3 = Cell.FaceCentres.DataRow(currentTet_ids(3),:);
-            Y0_3 = Cell.FaceCentres0.DataRow(currentTet_ids(3),:);
-            currentTet_ids(3)=currentTet_ids(3)+Set.NumMainV;
-        end 
-        if ~Cell.AssembleAll && ~any(ismember(currentTet_ids,Cell.RemodelledVertices)) 
-            continue
-        end  
-        currentTet = [Y1; Y2; Y3; cellNuclei];
-        currentTet0 = [Y0_1; Y0_2; Y0_3; cellNuclei0];
-        
-        try
-            [gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
-            
-            Energy=Energy+Energye;
-
-            % Update currentTet
-            ge=Assembleg(ge,gB,currentTet_ids);
-            
-            if nargout>1
-                if Set.Sparse == 2
-                    [si,sj,sv,sk]= AssembleKSparse(KB,currentTet_ids,si,sj,sv,sk);
-                else
-                    K = AssembleK(K,KB,currentTet_ids);
-                end
-                
-                if issymmetric(K) == 0
-                    error('K is not symmetric');
-                end
-            end
-        catch ME
-            if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
-                
-                errorInverted = [errorInverted; currentTet_ids];
-            else
-                ME.rethrow();
-            end
-        end
-    end
-    
-    g=g+ge;
-end
-
-if isempty(errorInverted) == 0
-    warning('Inverted Tetrahedral Element [%s]', sprintf('%d;', errorInverted'));
-%     ME = MException('KgBulk:invertedTetrahedralElement', ...
-%         'Inverted Tetrahedral Elements [%s]', sprintf('%d;', errorInverted'));
-%     throw(ME)
-end
-
+	for c=1:Geo.nCells
+		if Geo.Remodelling
+			if ~ismember(c,Geo.AssembleNodes)
+        		continue
+			end
+		end
+		ge=zeros(size(g, 1), 1);
+		cellNuclei  = Geo.Cells(c).X;
+		cellNuclei0 = Geo_0.Cells(c).X;
+		Ys  = Geo.Cells(c).Y;
+		Ys_0 = Geo_0.Cells(c).Y;
+		for f=1:length(Geo.Cells(c).Faces)
+			Tris = Geo.Cells(c).Faces(f).Tris;
+			for t=1:length(Tris)
+				y1   = Ys(Tris(t,1),:);
+				y1_0 = Ys_0(Tris(t,1),:);
+				y2   = Ys(Tris(t,2),:);
+				y2_0 = Ys_0(Tris(t,2),:);
+				if length(Tris) == 3
+					y3 = Ys(Tris(t+1,2),:);
+					y3_0 = Ys_0(Tris(t+1,2),:);
+					n3 = Geo.Cells(c).globalIds(Tris(t+1,2));
+				else
+					y3 = Geo.Cells(c).Faces(f).Centre;
+					y3_0 = Geo_0.Cells(c).Faces(f).Centre;
+					n3 = Geo.Cells(c).Faces(f).globalIds;
+				end
+				currentTet     = [y1; y2; y3; cellNuclei];
+				currentTet0    = [y1_0; y2_0; y3_0; cellNuclei0];
+				currentTet_ids = [Geo.Cells(c).globalIds(Tris(t,:))', n3, Geo.Cells(c).cglobalIds];
+				if Geo.Remodelling
+					if ~any(ismember(currentTet_ids,Geo.AssemblegIds))
+                        if length(Tris) == 3
+                            break
+                        else
+                		    continue
+                        end
+					end
+				end
+				try
+					[gB, KB, Energye] = KgBulkElem(currentTet, currentTet0, Set.mu_bulk, Set.lambda_bulk);
+					EnergyBulk=EnergyBulk+Energye;
+					ge=Assembleg(ge,gB,currentTet_ids);
+					K = AssembleK(K,KB,currentTet_ids);
+				catch ME
+					if (strcmp(ME.identifier,'KgBulkElem:invertedTetrahedralElement'))
+						errorInverted = [errorInverted; currentTet_ids];
+					else
+						ME.rethrow();
+					end
+				end
+				if length(Tris) == 3
+					break
+				end
+			end
+		end
+		g=g+ge;
+	end
+	if isempty(errorInverted) == 0
+		warning('Inverted Tetrahedral Element [%s]', sprintf('%d;', errorInverted'));
+	end
 end

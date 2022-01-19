@@ -33,8 +33,11 @@ function Set = SetDefault(Set)
     DSet.lambdaBend					= 0.01;
     DSet.BendingAreaDependent		= true;
     DSet.Propulsion					= false;
+	DSet.InPlaneElasticity          = false;
     DSet.Confinement				= false;
-    %% ============================ Viscosity =============================
+	DSet.mu_bulk					= 3000; 
+	DSet.lambda_bulk				= 2000;
+	%% ============================ Viscosity =============================
     DSet.nu							= 0.05;
     DSet.LocalViscosityEdgeBased	= false;
     DSet.nu_Local_EdgeBased			= 0;
