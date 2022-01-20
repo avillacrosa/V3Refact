@@ -282,30 +282,3 @@ function [Area]=AreTri(P1,P2,P3)
  Area =1/2*norm(cross(P2-P1,P3-P1));
 
 end 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

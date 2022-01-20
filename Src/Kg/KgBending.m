@@ -38,10 +38,6 @@ for i=1:ncell
         if Edges(e,3)<=Y.n, Y3=Y.DataRow(Edges(e,3),:); else,  Y3=Cell.FaceCentres.DataRow(Edges(e,3)-Y.n,:); end
         if Edges(e,4)<=Y.n, Y4=Y.DataRow(Edges(e,4),:); else,  Y4=Cell.FaceCentres.DataRow(Edges(e,4)-Y.n,:);end
         
-        
-        
-        
-        
         n1=cross(Y2-Y1,Y3-Y1);  n2=cross(Y4-Y1,Y2-Y1);
         A1=(1/2)*norm(n1);      A2=(1/2)*norm(n2);
         B=dot(n1,n2);
