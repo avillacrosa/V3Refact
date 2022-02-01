@@ -3,8 +3,8 @@ Geo.ny = 3;
 
 Set.lambdaV = 5;
 
-Set.tend=50;
-Set.Nincr=50;
+Set.tend=300;
+Set.Nincr=300;
 Set.BC = 1;
 Set.dx = 2; 
 

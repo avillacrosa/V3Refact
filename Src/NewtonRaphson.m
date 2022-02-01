@@ -9,8 +9,8 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
 	dyr=norm(dy(dof)); gr=norm(g(dof));
 	gr0=gr;
 
-	fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
-% 	fprintf(Set.fout,'Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
+	fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',...
+									numStep,0,gr,dyr,Set.dt/Set.dt0);
 
 	Energy = 0;
 	Set.iter=1;
@@ -19,11 +19,12 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
 	ig = 1;
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
     	dy(dof)=-K(dof,dof)\g(dof);
+		
     	alpha = LineSearch(Geo_0, Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes
     	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY+Geo.nCells))';
     	Geo = UpdateVertices(Geo, Set, dy_reshaped);
-		Geo = UpdateFacesArea(Geo);
+		Geo = UpdateMeasures(Geo);
     	%% ----------- Compute K, g ---------------------------------------
     	[g,K,Energy]=KgGlobal(Geo_0, Geo_n, Geo, Set);
     	dyr=norm(dy(dof)); gr=norm(g(dof));

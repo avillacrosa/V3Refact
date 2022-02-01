@@ -1,5 +1,5 @@
 function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_0, Geo_n, Geo, Dofs, Set, newYgIds)
-   for c = 1:Geo.nCells
+	for c = 1:Geo.nCells
 		for f = 1:length(Geo.Cells(c).Faces)
 	        Ys = Geo.Cells(c).Y;
 	        Ts = Geo.Cells(c).T;
@@ -34,12 +34,13 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_0, Geo_n, Geo, Dofs, Set
 	        Geo   = BuildGlobalIds(Geo); 
 			Geo_n = BuildGlobalIds(Geo_n);
 
-			Geo   = UpdateFacesArea(Geo);
-			Geo_n = UpdateFacesArea(Geo_n);
+			Geo   = UpdateMeasures(Geo);
+			Geo_n = UpdateMeasures(Geo_n);
 
             if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
     			fprintf('=>> 44 Flip.\n');
 				Dofs = GetDOFs(Geo, Set);
+				Geo.AssembleNodes=unique(Tnew);
 				[Dofs, Geo]  = GetRemodelDOFs(Tnew, Dofs, Geo);
 				[Geo, Set, DidNotConverge] = SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs, Set);
 				if DidNotConverge
@@ -57,8 +58,8 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_0, Geo_n, Geo, Dofs, Set
 				        Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
 			        end
                 end
-				Geo   = UpdateFacesArea(Geo);
-				Geo_n = UpdateFacesArea(Geo_n);
+				Geo   = UpdateMeasures(Geo);
+				Geo_n = UpdateMeasures(Geo_n);
             else
                 Geo   = Geo_backup;
 				Geo_n = Geo_n_backup;
@@ -66,7 +67,7 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_0, Geo_n, Geo, Dofs, Set
     			continue
             end
 		end
-    end
+	end
 end
 
 

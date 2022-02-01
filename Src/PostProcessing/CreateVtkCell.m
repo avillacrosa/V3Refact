@@ -7,9 +7,9 @@ function CreateVtkCell(Geo, Set, Step)
 	if ~exist(newSubFolder, 'dir')
     	mkdir(newSubFolder);
 	end
+
 	for c = 1:Geo.nCells
 		Ys = Geo.Cells(c).Y;
-
 		nameout=fullfile(newSubFolder, ['Cell_', num2str(c, '%04d'), '_t', num2str(Step, '%04d'), fileExtension]);
 		fout=fopen(nameout,'w');
 
@@ -18,59 +18,41 @@ function CreateVtkCell(Geo, Set, Step)
 		header = header + "ASCII\n";
 		header = header + "DATASET UNSTRUCTURED_GRID\n";
 
-		% TODO FIXME, not good...
-		totTris = 0;
-        nTris = 0;
-		for ft = 1:length(Geo.Cells(c).Faces)
-			ntris = length(Geo.Cells(c).Faces(ft).Tris);
-            if ntris == 3
-                totTris = totTris + 1;
-                nTris = nTris + 1;
-                continue;
-            end
-			for t = 1:ntris
-				totTris = totTris + 1;
-			end
-		end
-
-		points = sprintf("POINTS %d float\n", ...
-					length(Ys)+length(Geo.Cells(c).Faces)-nTris);
-% 		points = sprintf("POINTS %d float\n", ...
-% 					length(Ys)+1);		
+		points = ""; cells = ""; cells_type = "";
 		for yi = 1:length(Ys)
 			points = points + sprintf(" %.8f %.8f %.8f\n",...
 								   Ys(yi,1),Ys(yi,2),Ys(yi,3));
 
 		end
-		
-		cells  = sprintf("CELLS %d %d\n",totTris,4*totTris);
-		ntris = 0;
-		for f = 1:length(Geo.Cells(c).Faces)
-            
-			face = Geo.Cells(c).Faces(f);
-            if length(Geo.Cells(c).Faces(f).Tris)~=3
-			    points = points + sprintf(" %.8f %.8f %.8f\n",...
-								       face.Centre(1),face.Centre(2),face.Centre(3));
 
-			    for t = 1:length(face.Tris)
-				    cells    = cells + sprintf("3 %d %d %d\n",...
-										    face.Tris(t,1)-1, face.Tris(t,2)-1, f+length(Ys)-1-ntris);
-    
-			    end
-            else
-				    cells    = cells + sprintf("3 %d %d %d\n",...
-						face.Tris(1,1)-1, face.Tris(1,2)-1, face.Tris(2,2)-1);
-					% TODO FIXME, bad and unnecessary...
-					ntris = ntris + 1;
-            end
-			
+		nTriFaces = 0; totCells = 0;
+
+		for f = 1:length(Geo.Cells(c).Faces)
+			Face = Geo.Cells(c).Faces(f);
+			if length(Face.Tris)==3
+				n3 = Face.Tris(2,2)-1;
+				nTriFaces = nTriFaces + 1;
+			else
+				points = points + sprintf(" %.8f %.8f %.8f\n",...
+							Face.Centre(1),Face.Centre(2),Face.Centre(3));
+				n3 = f+length(Ys)-1-nTriFaces;
+			end
+		    for t = 1:length(Face.Tris)
+			    cells    = cells + sprintf("3 %d %d %d\n",...
+							    Face.Tris(t,1)-1, Face.Tris(t,2)-1, n3);
+				totCells = totCells + 1;
+		    end
 		end
-		
-		cells_type = sprintf("CELL_TYPES %d \n", totTris);
-    	for numTries=1:totTris
+
+		for numTries=1:totCells
         	cells_type = cells_type + sprintf('%d\n',5);
-    	end
-		
+		end
+
+		points = sprintf("POINTS %d float\n", ...
+				length(Ys)+length(Geo.Cells(c).Faces)-nTriFaces) + points;
+		cells  = sprintf("CELLS %d %d\n",totCells,4*totCells) + cells;
+		cells_type = sprintf("CELL_TYPES %d \n", totCells) + cells_type;
+
 		fprintf(fout, header + points + cells + cells_type);
 		fclose(fout);
 	end

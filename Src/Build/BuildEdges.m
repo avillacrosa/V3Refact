@@ -1,36 +1,60 @@
 function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% BuildEdges:										  
+	%   Obtain the local ids of the edges that define a Face. The order of 
+	%   such indices is reordered to produce positive areas and volumes.
+	% Input:															  
+	%   Tets		: All tetrahedras
+	%   FaceIds		: Local indices defining the tetrahedras in the face
+	%   FaceCentre	: Centre of the Face
+	%   X           : Centre of the Cell containing the Face
+	%   Ys          : All Vertices of the Cell
+	% Output:															  
+	%   edges       : Local indices of the vertices forming the 
+	%	face. That is Geo.Cells(c).Y(edges(e,:),:) will give vertices
+	%   defining the edge. Used also for triangle computation
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
 	FaceTets = Tets(FaceIds,:);
-	vtk_order = zeros(length(FaceTets),1);
+	tet_order = zeros(length(FaceTets),1);
 	% TODO FIXME, initialize, there was a bug here. Is there a more
 	% clean way to write it ?
-	vtk_order(1) = 1;
+	tet_order(1) = 1;
 	prev_tet  = FaceTets(1,:);
+
+	%% Tetrahedra ordering
+	% Order the tetrahedras defining the vertices of the face in a general
+	% clock-wise manner. 
     if size(FaceTets,1) > 3
         for yi = 2:length(FaceTets)
+			% Find all tets sharing 3 nodes with the previous one
 		    i = sum(ismember(FaceTets, prev_tet),2)==3;
-		    i = i & ~ismember(1:length(FaceTets),vtk_order)';
+			% 
+		    i = i & ~ismember(1:length(FaceTets),tet_order)';
 		    i = find(i);
             if isempty(i)
+				% Something went really wrong in the simulation
                 edges = [];
                 return
             end
-		    vtk_order(yi) = i(1);
+		    tet_order(yi) = i(1);
 		    prev_tet = FaceTets(i(1),:);
         end
-    else
-        % TODO FIXME is this enough??? will it get flipped later if not
-        % correct ???
-        vtk_order = [1 2 3]';
+	else
+        tet_order = [1 2 3]';
     end
 	surf_ids  = 1:length(Tets); 
 	surf_ids  = surf_ids(FaceIds);
     if length(surf_ids) < 3
+		% Something went really wrong in the simulation, or a flip being 
+		% tested would result in another face being just an edge.
         edges = [];
         return
     end
-	surf_ids  = surf_ids(vtk_order);
-    % TODO FIXME IS THIS ACCEPTABLE?
-%     if size(FaceTets,1) > 3
+	surf_ids  = surf_ids(tet_order);
+
+	%% Vertices ordering
+	% The clockwise ordering might be incorrect for some cases, which need
+	% reordering.
 	if size(FaceTets,1) == 3
 		centre = sum(Ys(surf_ids,:))/3;
 	else
@@ -51,6 +75,8 @@ function edges = BuildEdges(Tets, FaceIds, FaceCentre, X, Ys)
 	if Order<0 
 	    surf_ids=flip(surf_ids);
 	end
+
+	%% Build edges
 	edges = zeros(length(surf_ids), 2);
 	for yf = 1:length(surf_ids)-1
 		edges(yf,:) = [surf_ids(yf) surf_ids(yf+1)];

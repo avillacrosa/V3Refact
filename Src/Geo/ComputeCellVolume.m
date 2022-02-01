@@ -1,4 +1,12 @@
 function v=ComputeCellVolume(Cell)
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% ComputeCellVolume:										  
+	%   Computes Cell Volume
+	% Input:															  
+	%   Cell : Cell object for which the volume is calculated			  
+	% Output:															  
+	%   v : Cell volume    
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	v = 0;
     for f = 1:length(Cell.Faces)
 		face = Cell.Faces(f);

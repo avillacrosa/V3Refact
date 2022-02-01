@@ -43,7 +43,7 @@ function [g,K,EnergyB]=KgTriEnergyBarrier(Geo,Set)
 	        	g=Assembleg(g,gs*fact,nY);	
 				Ks=(gs)*(gs')*fact2+Ks*fact+Kss*fact;
 				K= AssembleK(K,Ks,nY);
-				EnergyB=EnergyB+ exp(lambdaB*(1-Set.Beta*Face.TrisArea(t)/Set.BarrierTri0));
+				EnergyB=EnergyB+exp(lambdaB*(1-Set.Beta*Face.TrisArea(t)/Set.BarrierTri0));
 %                 fprintf("%.12f %.12f %.12f %.3f %.3f %3f %d %d %d\n", norm(g), norm(K), EnergyB, y3, c, f, t);
 				if length(Tris) == 3
 % 					sort(gs), sort(Ks)

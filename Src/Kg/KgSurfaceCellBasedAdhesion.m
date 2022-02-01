@@ -14,14 +14,11 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 		for f=1:length(Cell.Faces)
 			face = Cell.Faces(f);
 			if face.InterfaceType==0
-				% TODO FIXME ADAPT THIS
-				Lambda=Set.lambdaS1*1;
+				Lambda=Set.lambdaS1*Cell.ExternalLambda;
 			elseif face.InterfaceType==1
-				% TODO FIXME ADAPT THIS
-				Lambda=Set.lambdaS2*1;
+				Lambda=Set.lambdaS2*Cell.InternalLambda;
 			elseif face.InterfaceType==2
-				% TODO FIXME ADAPT THIS
-				Lambda=Set.lambdaS3*1;
+				Lambda=Set.lambdaS3*Cell.SubstrateLambda;
 			end
 			fact0=fact0+Lambda*face.Area;
 		end
@@ -30,14 +27,11 @@ function [g,K,EnergyS]=KgSurfaceCellBasedAdhesion(Geo, Set)
 			face = Cell.Faces(f);
 			Tris=Cell.Faces(f).Tris;
 			if face.InterfaceType==0
-				% TODO FIXME ADAPT THIS
-				Lambda=Set.lambdaS1*1;
+				Lambda=Set.lambdaS1*Cell.ExternalLambda;
 			elseif face.InterfaceType==1
-				% TODO FIXME ADAPT THIS
-				Lambda=Set.lambdaS2*1;
+				Lambda=Set.lambdaS2*Cell.InternalLambda;
 			elseif face.InterfaceType==2
-				% TODO FIXME ADAPT THIS
-				Lambda=Set.lambdaS3*1;
+				Lambda=Set.lambdaS3*Cell.SubstrateLambda;
 			end
 			for t = 1:length(Tris)
 				y1 = Ys(Tris(t,1),:);

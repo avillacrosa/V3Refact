@@ -3,13 +3,13 @@ Geo.ny = 3;
 
 Set.lambdaV = 5;
 
-Set.tend=50;
-Set.Nincr=50;
+Set.tend=300;
+Set.Nincr=300;
 Set.BC = 1;
 Set.dx = 2; 
 
-Set.mu_bulk     = 1; % deformation term
-Set.lambda_bulk = 1; % volume term
+Set.mu_bulk     = 0; % deformation term
+Set.lambda_bulk = 0.01; % volume term
 Set.InPlaneElasticity = true;
 
 Set.lambdaS1 = 1;

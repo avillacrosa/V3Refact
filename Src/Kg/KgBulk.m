@@ -12,8 +12,6 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 			end
 		end
 		ge=zeros(size(g, 1), 1);
-		cellNuclei  = Geo.Cells(c).X;
-		cellNuclei0 = Geo_0.Cells(c).X;
 		Ys  = Geo.Cells(c).Y;
 		Ys_0 = Geo_0.Cells(c).Y;
 		for f=1:length(Geo.Cells(c).Faces)
@@ -32,8 +30,8 @@ function [g,K,EnergyBulk]=KgBulk(Geo_0, Geo, Set)
 					y3_0 = Geo_0.Cells(c).Faces(f).Centre;
 					n3 = Geo.Cells(c).Faces(f).globalIds;
 				end
-				currentTet     = [y1; y2; y3; cellNuclei];
-				currentTet0    = [y1_0; y2_0; y3_0; cellNuclei0];
+				currentTet     = [y1; y2; y3; Geo.Cells(c).X];
+				currentTet0    = [y1_0; y2_0; y3_0; Geo_0.Cells(c).X];
 				currentTet_ids = [Geo.Cells(c).globalIds(Tris(t,:))', n3, Geo.Cells(c).cglobalIds];
 				if Geo.Remodelling
 					if ~any(ismember(currentTet_ids,Geo.AssemblegIds))
