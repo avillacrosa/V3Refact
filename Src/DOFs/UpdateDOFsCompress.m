@@ -1,4 +1,4 @@
-function Geo = UpdateDOFsCompress(Geo,Set)
+function [Geo, Dofs] = UpdateDOFsCompress(Geo,Set)
 	maxY = Geo.Cells(1).Y(1,2);
 	for c = 1:Geo.nCells
 		hit = find(Geo.Cells(c).Y(:,2)>maxY);

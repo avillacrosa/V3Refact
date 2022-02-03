@@ -3,8 +3,9 @@ addpath(genpath('Src'));
 
 disp('------------- SIMULATION STARTS -------------');
 
-Stretch
+% Stretch
 % Compress
+Extrusion
 % StretchBulk
 % Extrude
 

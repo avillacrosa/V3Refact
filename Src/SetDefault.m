@@ -15,6 +15,8 @@ function Set = SetDefault(Set)
     DSet.SeedingMethod				= 1;
     DSet.s							= 1.5;
     DSet.ObtainX					= 0;
+	DSet.Substrate                  = false;
+	DSet.SubstrateZ                 = 0;
     %% 2D input image to obtain  the initial topology of the cells
     DSet.InputSegmentedImage		= [];
     DSet.CellAspectRatio			= 1;

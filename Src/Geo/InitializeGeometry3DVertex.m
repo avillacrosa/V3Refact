@@ -25,6 +25,15 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	%% Perform Delaunay
 	[Geo.XgID,X]=SeedWithBoundingBox(X,Set.s);
 
+	% TODO Not a fan, should be somewhere else
+	if Set.Substrate
+    	%% Add far node in the bottom  
+    	Xg=X(Geo.XgID,:); X(Geo.XgID,:)=[];
+    	Xg(Xg(:,3)<mean(X(:,3)),:)=[];
+    	Geo.XgID=(size(X,1)+1):(size(X,1)+size(Xg,1)+1);
+
+    	X=[X;Xg;mean(X(:,1)), mean(X(:,2)), -1000+min(X(:,3))]; 
+	end 
 	Twg=delaunay(X);
 
 	% Remove tetrahedras formed only by ghost nodes
@@ -35,7 +44,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 
 	conv(unique(Twg)) = 1:size(X);
 	Twg = conv(Twg);
-
+	XgSub=size(X,1);
 	%% Populate the Geo struct
 
 	% TODO FIXME Fields that structs in the Cells array and Faces in a Cell 
@@ -48,16 +57,19 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	Geo.Cells = BuildStructArray(length(X), CellFields);
 	% Nodes and Tetrahedras
 	for c = 1:length(X)
-		Geo.Cells(c).X     = X(c,:);
-		Geo.Cells(c).T     = Twg(any(ismember(Twg,c),2),:);
+		Geo.Cells(c).X = X(c,:);
+		Geo.Cells(c).T = Twg(any(ismember(Twg,c),2),:);
 	end
 
 	% Cell vertices
 	for c = 1:Geo.nCells
-		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, ...
-													Geo.XgID, Set);
+		Geo.Cells(c).Y  = BuildYFromX(Geo.Cells(c), Geo.Cells, Geo.XgID, Set);
 	end
-
+	for c = 1:Geo.nCells
+		if Set.Substrate
+			Geo.Cells(c).Y = BuildYSubstr(Geo.Cells(c), Geo.Cells, Geo.XgID, Set, XgSub);
+		end
+	end
 	% Cell Faces, Volumes and Areas
 	for c = 1:Geo.nCells
 		Neigh_nodes = unique(Geo.Cells(c).T);
@@ -76,7 +88,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).InternalLambda = 1;
 		Geo.Cells(c).SubstrateLambda = 1;
 	end
-	
+
 	% Differential adhesion values
 	for l1 = 1:size(Set.lambdaS1CellFactor,1)
 		ci = Set.lambdaS1CellFactor(l1,1);
@@ -98,6 +110,19 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 
 	% Unique Ids for each point (vertex, node or face center) used in K
 	Geo = BuildGlobalIds(Geo);
+	if Set.Substrate
+    	% update the position of the surface centers on the substrate
+		for c = 1:length(Geo.Cells)
+			for f = 1:length(Geo.Cells(c).Faces)
+				Face = Geo.Cells(c).Faces(f);
+				if Face.ij(2)==XgSub
+            		Geo.Cells(c).Faces(f).Centre(3)=Set.SubstrateZ;
+					Geo.Cells(c).Faces(f).InterfaceType	= BuildInterfaceType(Face.ij, Geo.XgID);
+				end
+			end
+		end
+		Geo = UpdateMeasures(Geo);
+	end 
 	
 	% TODO FIXME I don't like this
 	Geo.AssembleNodes = 1:Geo.nCells;
