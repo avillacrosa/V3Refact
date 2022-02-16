@@ -1,42 +1,11 @@
 function [XgID,X]=SeedWithBoundingBox(X,s)
-	% This funcrion seeds nodes in undesired entities (edges, faces and tetrahedrons) 
-	% while cell-centers are bounded by ghost nodes. 
-	
-	% Changed by Adria. I think that for centered geometries this is better.
-	r=5*max(abs(max(X)-min(X)));
-	%% 1)  Define bounding Nodes
-	
-	% Bounding Box 1
-	%rr=mean(X);
-	% Xg=[r  r  r;
-	%    -r  r  r;
-	%    -r -r  r;
-	%    -r  r -r;
-	%     r -r  r;
-	%    -r -r -r;
-	%     r -r -r;
-	%     r  r -r;
-	%     0  0  r;
-	%     0  0 -r;
-	%     r  0  0;
-	%     -r 0  0;
-	%     0 -r  0;
-	%     0  r  0]+rr;
-	
-	% Bounding Box 2
-	% rr=mean(X);
-	% Xg=[ r  r  r;
-	%	  -r  r  r;
-	%	  -r -r  r;
-	%	  -r  r -r;
-    %	   r -r  r;
-	%	  -r -r -r;
-    %	   r -r -r;
-    %	   r  r -r]+rr;
-	
-	%  Bounding Shpere 
-	theta=linspace(0,2*pi,5);
-	phi=linspace(0,pi,5);
+    nCells = size(X,1);
+	r0=mean(X); 
+    r=5*max(abs(max(X-r0)));
+
+	theta=linspace(0,2*pi,5); theta = theta(1:end-1);
+    phi=linspace(0,pi,5); phi = phi(2:end-1);
+
 	[theta,phi]=meshgrid(theta,phi);
 	x=r*sin(phi).*cos(theta);
 	y=r*sin(phi).*sin(theta);
@@ -44,28 +13,23 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
 	x=reshape(x,size(x,1)*size(x,2),1);
 	y=reshape(y,size(y,1)*size(y,2),1);
 	z=reshape(z,size(z,1)*size(z,2),1);
-	Xg=[x y z];  
-	Xg=uniquetol(Xg,'ByRows',1e-6);
+    XgBB=[0, 0, r; x, y, z; 0, 0, -r];
+    XgBB=XgBB+r0;
+% 	Xg=uniquetol(Xg,'ByRows',1e-6);
+    % This interpolates a sphere by intersecting 2 circles defining a plane
+    % and intersecting each other
 	
 	%% 2) Do first Delaunay with ghost nodes
-	XgID=size(X,1)+1:size(X,1)+size(Xg,1);
-	X=[X;Xg];
+	XgID=(size(X,1)+1):(size(X,1)+size(XgBB,1));
+    XgIDBB = XgID;
+	X=[X;XgBB];
 	Twg=delaunay(X);
-	
+	% ------------- EQUAL UP TO HERE
 	%% 3) intitilize 
-	Side=[	1 2 3;
-      		1 2 4;
-      		2 3 4;
-      		1 3 4];
-	Edges=[	1 2;
-       		2 3;
-       		3 4;
-       		1 3;
-       		1 4;
-       		3 4;
-       		1 4];  
+	Side =[	1 2 3; 1 2 4; 2 3 4; 1 3 4];
+	Edges=[	1 2; 2 3; 3 4; 1 3; 1 4; 3 4; 1 4];  
 	% find real tests 
-	Vol=zeros(size(Twg,1),1);
+    % Vol=zeros(size(Twg,1),1);
 	AreaFaces=zeros(size(Twg,1)*3,4);
 	LengthEdges=zeros(size(Twg,1)*3,6);
 	% Volc=0;
@@ -94,13 +58,13 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
     	end    
 	end 
 	
-	
 	%% 5) seed nodes in big Entities (based on characteristic Length h) 
 	for i=1:size(Twg,1)  
     	%---- Seed according to area 
     	for j=1:4
         	if sum(ismember(Twg(i,Side(j,:)),XgID))==0
             	if AreaFaces(i,j)>(s)^2
+                    % WE DO NOT ENTER HERE
                 	[X,XgID]=SeedNodeTri(X,XgID,Twg(i,Side(j,:)),s);
             	end 
         	end 
@@ -110,6 +74,7 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
     	for j=1:6
         	if sum(ismember(Twg(i,Edges(j,:)),XgID))==0 && LengthEdges(i,j)>2*s % LengthEdges(i,j)>LengthTol*mLength
 	%             [X,XgID]=SeedNodeBar(X,XgID,Twg(i,Edges(j,:)),h);
+                % WE DO NOT ENTER HERE
             	[X,XgID]=SeedNodeTet(X,XgID,Twg(i,:),s); 
             	break
         	end 
@@ -117,12 +82,13 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
 	end 
 	
 	%% 6)  Seed on ghost Tets
-	for i=1:length(Vol)   
+    for i=1:size(Twg,1)   
     	if sum(ismember(Twg(i,:),XgID))>0 
         	[X,XgID]=SeedNodeTet(X,XgID,Twg(i,:),s);
      	end 
-	end
-
+    end
+    X(XgIDBB,:) = [];
+    XgID = (nCells+1):size(X,1);
 end
 
 

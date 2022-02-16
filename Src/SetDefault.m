@@ -65,9 +65,9 @@ function Set = SetDefault(Set)
     DSet.Parallel					= false;
     DSet.Sparse						= false;
     %% ================= Boundary Condition and loading setting ===========
-    DSet.BC							= 1;
-    DSet.VFixd						= -1.5;
-    DSet.VPrescribed				= 1.5;
+    DSet.BC							= nan;
+    DSet.VFixd						= -inf;
+    DSet.VPrescribed				= inf;
     DSet.dx							= 2;
     DSet.TStartBC					= 20;
     DSet.TStopBC					= 200;

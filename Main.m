@@ -13,7 +13,14 @@ Set=SetDefault(Set);
 InitiateOutputFolder(Set);
 
 [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
-Dofs = GetDOFs(Geo, Set);
+PostProcessingVTK(Geo, Set, 0);
+
+% TODO FIXME, this is bad, should be joined somehow
+if ~Set.Substrate
+    Dofs = GetDOFs(Geo, Set);
+else
+    Dofs = GetDOFsSubstrate(Geo, Set);
+end
 Geo.Remodelling = false;
 
 t=0; tr=0; tp=0;

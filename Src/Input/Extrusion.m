@@ -11,5 +11,6 @@ Set.lambdaS2 = 0.5;
 
 Set.Substrate  = true;
 Set.SubstrateZ = -0.5;
+Set.VFixd = -0.4;
 
 Set.OutputFolder='Result/Extrusion';

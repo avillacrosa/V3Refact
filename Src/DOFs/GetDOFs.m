@@ -1,4 +1,6 @@
 function [Dofs]=GetDOFs(Geo, Set)
+% TODO FIXME, this function assumes that VFixd and VPrescribed are -+ 
+% infinite. This is bad and should be handled in some other way.
     % Define free and constrained vertices:
     %   1) Vertices with y-coordinates > Set.VPrescribed are those to be prescribed (pulled)
     %   2) Vertices with y-coordinates < Set.VFixed are those to be fixed
@@ -16,7 +18,7 @@ function [Dofs]=GetDOFs(Geo, Set)
             if length(Face.Tris) == 3
                 continue
             end
-            if Face.Centre(2) < Set.VFixd
+            if Face.Centre(2) <= Set.VFixd
                 gconstrained(dim*(Face.globalIds-1)+1:dim*Face.globalIds) = 1;
             elseif Face.Centre(2) > Set.VPrescribed
                 gprescribed(dim*(Face.globalIds-1)+2) = 1;
@@ -26,7 +28,7 @@ function [Dofs]=GetDOFs(Geo, Set)
 				end
             end
         end
-        fixY = Y(:,2) < Set.VFixd;
+        fixY = Y(:,2) <= Set.VFixd;
         preY = Y(:,2) > Set.VPrescribed;
         for ff = 1:length(find(fixY))
             idx = find(fixY);
