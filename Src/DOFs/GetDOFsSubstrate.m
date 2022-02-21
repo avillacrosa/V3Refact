@@ -12,8 +12,6 @@ function [Dofs]=GetDOFsSubstrate(Geo, Set)
                 continue
             end
             if Face.Centre(3) <= Set.SubstrateZ
-            	gconstrained(dim*(Face.globalIds-1)+1) = 1;
-            	gconstrained(dim*(Face.globalIds-1)+2) = 1;
             	gconstrained(dim*(Face.globalIds-1)+3) = 1;
             end
         end
