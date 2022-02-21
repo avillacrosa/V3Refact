@@ -3,8 +3,12 @@ addpath(genpath('Src'));
 
 disp('------------- SIMULATION STARTS -------------');
 
-% Stretch
-Compress
+% TODO FIXME, I think it would be ideal to call the input on another file,
+% and move the main flow (this file) to another file, so that multiple 
+% simulations can be run from a single file
+
+Stretch
+% Compress
 % Extrusion
 % StretchBulk
 % Extrude

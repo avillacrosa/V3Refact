@@ -9,8 +9,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
 	dyr=norm(dy(dof)); gr=norm(g(dof));
 	gr0=gr;
 
-	fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',...
-									numStep,0,gr,dyr,Set.dt/Set.dt0);
+	fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
 
 	Energy = 0;
 	Set.iter=1;
