@@ -3,17 +3,17 @@ function [XgID,X]=SeedWithBoundingBox(X,s)
 	r0=mean(X); 
     r=5*max(abs(max(X-r0)));
 
-	theta=linspace(0,2*pi,5); theta = theta(1:end-1);
-    phi=linspace(0,pi,5); phi = phi(2:end-1);
-
-	[theta,phi]=meshgrid(theta,phi);
-	x=r*sin(phi).*cos(theta);
-	y=r*sin(phi).*sin(theta);
-	z=r*cos(phi);
-	x=reshape(x,size(x,1)*size(x,2),1);
-	y=reshape(y,size(y,1)*size(y,2),1);
-	z=reshape(z,size(z,1)*size(z,2),1);
-    XgBB=[0, 0, r; x, y, z; 0, 0, -r];
+	theta=linspace(0,2*pi,5);
+    phi=linspace(0,pi,5);
+    [theta,phi]=meshgrid(theta,phi);
+    x=r*sin(phi).*cos(theta);
+    y=r*sin(phi).*sin(theta);
+    z=r*cos(phi);
+    x=reshape(x,size(x,1)*size(x,2),1);
+    y=reshape(y,size(y,1)*size(y,2),1);
+    z=reshape(z,size(z,1)*size(z,2),1);
+    XgBB=[x y z];  
+    XgBB=uniquetol(XgBB,'ByRows',1e-6);
     XgBB=XgBB+r0;
 % 	Xg=uniquetol(Xg,'ByRows',1e-6);
     % This interpolates a sphere by intersecting 2 circles defining a plane

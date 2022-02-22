@@ -11,4 +11,6 @@ Set.dx = 2;
 Set.lambdaS1 = 1;
 Set.lambdaS2 = 0.8; 
 
+Set.VPrescribed = 1.5;
+Set.VFixd = -1.5;
 Set.OutputFolder='Result/Stretch';
