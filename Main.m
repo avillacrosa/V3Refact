@@ -1,13 +1,15 @@
 close all; clear; clc;
+fclose('all');
 addpath(genpath('Src'));
-
+tStart = tic;
 disp('------------- SIMULATION STARTS -------------');
 
-Stretch
-% Compress
+% Stretch
+Compress
 
 Set=SetDefault(Set);
-InitiateOutputFolder(Set);
+Set=InitiateOutputFolder(Set);
+Set.flog = fopen(Set.log, 'w+');
 
 [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
 Dofs = GetDOFs(Geo, Set);
@@ -48,10 +50,12 @@ while t<=Set.tend
         Geo = Geo_b;
         if Set.iter == Set.MaxIter0 
             fprintf('First strategy ---> Repeating the step with higher viscosity... \n');
+            fprintf(Set.flog, 'First strategy ---> Repeating the step with higher viscosity... \n');
             Set.MaxIter=Set.MaxIter0*3;
             Set.nu=10*Set.nu0;
         elseif Set.iter == Set.MaxIter && Set.iter > Set.MaxIter0 && Set.dt>Set.dt0/(2^6)
             fprintf('Second strategy ---> Repeating the step with half step-size...\n');
+            fprintf(Set.flog, 'Second strategy ---> Repeating the step with half step-size...\n');
             Set.MaxIter=Set.MaxIter0;
             Set.nu=Set.nu0;
             t=tp;
@@ -59,8 +63,12 @@ while t<=Set.tend
             t=t+Set.dt;
         else
             fprintf('Step %i did not converge!! \n', Set.iIncr);
+            fprintf(Set.flog, 'Step %i did not converge!! \n', Set.iIncr);
             break;
         end
     end
 end
-
+tEnd = duration(seconds(toc(tStart)));
+tEnd.Format = 'hh:mm:ss';
+fprintf("Total real run time %s \n",tEnd);
+fprintf(Set.flog, "Total real run time %s \n",tEnd);

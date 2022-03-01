@@ -1,4 +1,4 @@
-function InitiateOutputFolder(Set)
+function Set = InitiateOutputFolder(Set)
 	% Creates Output Folder and deletes old files if exsit
 	DirOutput=fullfile(pwd, Set.OutputFolder);
 	if exist(DirOutput, 'dir')
@@ -26,7 +26,8 @@ function InitiateOutputFolder(Set)
 		if folders{f,1} && ~exist(newDir,'dir')
 			mkdir(newDir)
 		end
-	end
+    end
+    Set.log = fullfile(DirOutput, Set.log);
 end
 
 

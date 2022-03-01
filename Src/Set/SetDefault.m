@@ -64,6 +64,7 @@ function Set = SetDefault(Set)
 % 	DSet.analysisDir				= strcat(Set.OutputFolder,Esc,'Analysis',Esc);
 	DSet.SaveWorkspace				= false;
 	DSet.SaveSetting				= false;
+    DSet.log                        = 'log.txt';
 	%% ====================== Add missing fields to Set ===================
 	Set = AddDefault(Set, DSet);
 	%% ========================= Derived variables ========================

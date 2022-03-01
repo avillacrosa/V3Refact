@@ -1,4 +1,4 @@
-function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t)
+function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t)
 	% TODO FIXME There should be a cleaner way for this...
 	if Geo.Remodelling
     	% Changed by Adria. Typo
@@ -12,9 +12,10 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, S
 	gr0=gr;
 
 	fprintf('Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
-% 	fprintf(Set.fout,'Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
+	fprintf(Set.flog,'Step: %i,Iter: %i ||gr||= %e ||dyr||= %e dt/dt0=%.3g\n',numStep,0,gr,dyr,Set.dt/Set.dt0);
 
 	Energy = 0;
+    
 	Set.iter=1;
     auxgr=zeros(3,1);
     auxgr(1)=gr;
@@ -34,7 +35,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = newtonRaphson(Geo_n, Geo, Dofs, S
     	[g,K,Energy]=KgGlobal(Geo_n, Geo, Set);
     	dyr=norm(dy(dof)); gr=norm(g(dof));
     	fprintf('Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
-% 		fprintf(Set.fout,'Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
+		fprintf(Set.flog,'Step: % i,Iter: %i, Time: %g ||gr||= %.3e ||dyr||= %.3e alpha= %.3e  nu/nu0=%.3g \n',numStep,Set.iter,t,gr,dyr,alpha,Set.nu/Set.nu0);
 
     	Set.iter=Set.iter+1;
 		auxgr(ig+1)=gr;
