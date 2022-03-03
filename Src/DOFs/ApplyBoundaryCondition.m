@@ -1,7 +1,22 @@
 function [Geo, Dofs] = applyBoundaryCondition(t, Geo, Dofs, Set)
-%APPLYBOUNDARYCONDITION Summary of this function goes here
-%   Detailed explanation goes here
-
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% ApplyBoundaryCondition:											
+	%   Modify the DOFs object by including the prescribed points for a
+	%   given time. Also update positions of the points in Geo object. 
+	% 	Dofs contains the UNVECTORIZED ids (every point has            
+	%   a single id only) for the constrained FixC (no displacement    
+	%   throughout the simulation) and the prescribed FixP (values may 
+	%	displacement may vary throughout the simulation					
+	% Input:															
+	%   t    : Current time of simulation								
+	%   Geo  : Geometry object										   
+	%   Dofs : Dofs object. Contains Free, FixP, FixC and Fix			
+	%   Set  : User input settings struct                              
+	% Output:															
+	%   Geo  : Geometry object with updated positions                  
+	%   Dofs : DOFS object with updated degrees of freedom				
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
 	if t<=Set.TStopBC && t>=Set.TStartBC
 		[dimP, FixIDs] = ind2sub([3, Geo.numY+Geo.numF+Geo.nCells],Dofs.FixP);
 		if Set.BC==1

@@ -1,4 +1,14 @@
 function Set = SetDefault(Set)
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% SetDefault:														  
+	%   Adds to the Set struct all the default fields not given in the	  
+	%   user input file. This is done by defining a default Set struct    
+	%   (DSet)  and then adding to the Set struct the missing fields.     
+	% Input:															  
+	%   Set : User input set struct										  
+	% Output:															  
+	%   Set : User input set struct with added default fields             
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     DSet = struct();
     %% =============================  Topology ============================
     DSet.SeedingMethod				= 1;
@@ -69,16 +79,19 @@ function Set = SetDefault(Set)
 	DSet.SaveSetting				= false;
     DSet.log                        = 'log.txt';
 	%% ====================== Add missing fields to Set ===================
-	Set = AddDefault(Set, DSet);
+	Set  = AddDefault(Set, DSet);
+	DSet = Set;
 	%% ========================= Derived variables ========================
-    Set.lambdaS3					= Set.lambdaS2;
-    Set.lambdaS4					= Set.lambdaS2;
-    Set.f							= Set.s/2;
-    Set.CellHeight					= DSet.CellAspectRatio*DSet.zScale; %!
-    Set.nu_LP_Initial				= 50*Set.nu; %!
-    Set.BarrierTri0					= 1e-3*Set.s; %!
-	Set.nu0                         = Set.nu;
-	Set.dt0=Set.tend/Set.Nincr;
-	Set.dt=Set.dt0;
-	Set.MaxIter0					= Set.MaxIter;
+    DSet.lambdaS3					= DSet.lambdaS2;
+    DSet.lambdaS4					= DSet.lambdaS2;
+    DSet.f							= DSet.s/2;
+    DSet.CellHeight					= DSet.CellAspectRatio*DSet.zScale; %!
+    DSet.nu_LP_Initial				= 50*DSet.nu; %!
+    DSet.BarrierTri0				= 1e-3*DSet.s; %!
+	DSet.nu0                        = DSet.nu;
+	DSet.dt0                        = DSet.tend/DSet.Nincr;
+	DSet.dt                         = DSet.dt0;
+	DSet.MaxIter0					= DSet.MaxIter;
+	%% ====================== Add missing fields to Set ===================
+	Set = AddDefault(Set, DSet);
 end
