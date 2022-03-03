@@ -5,7 +5,8 @@ tStart = tic;
 disp('------------- SIMULATION STARTS -------------');
 
 % Stretch
-Compress
+StretchBulk
+% Compress
 
 Set=SetDefault(Set);
 Set=InitiateOutputFolder(Set);
