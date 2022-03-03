@@ -1,4 +1,4 @@
-function [g,K,E] = KgGlobal(Geo_n, Geo, Set)
+function [g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set)
 	%% Surface Energy
 	[gs,Ks,ES]=KgSurfaceCellBasedAdhesion(Geo,Set);
 	%% Volume Energy

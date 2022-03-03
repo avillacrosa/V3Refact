@@ -16,13 +16,14 @@ Dofs = GetDOFs(Geo, Set);
 Geo.Remodelling = false;
 
 t=0; tr=0; tp=0;
+Geo_0   = Geo;
 Geo_n   = Geo;
 numStep = 1;
 
 PostProcessingVTK(Geo, Set, numStep)
 while t<=Set.tend
 	if Set.Remodelling && abs(t-tr)>=Set.RemodelingFrequency
-        [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_n, Geo, Dofs, Set);
+        [Geo_n, Geo, Dofs, Set] = Remodeling(Geo_0, Geo_n, Geo, Dofs, Set);
         tr    = t;
 	end
 	Geo_b = Geo;
@@ -30,8 +31,8 @@ while t<=Set.tend
 
     [Geo, Dofs] = ApplyBoundaryCondition(t, Geo, Dofs, Set);
 	Geo = UpdateFacesArea(Geo);
-	[g,K,E] = KgGlobal(Geo_n, Geo, Set); 
-	[Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_n, Geo, Dofs, Set, K, g, numStep, t);
+	[g,K,E] = KgGlobal(Geo_0, Geo_n, Geo, Set); 
+	[Geo, g, K, Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t);
     if gr<Set.tol && dyr<Set.tol && all(isnan(g(Dofs.Free)) == 0) && all(isnan(dy(Dofs.Free)) == 0) && Set.nu/Set.nu0 == 1
 		fprintf('STEP %i has converged ...\n',Set.iIncr)
 
