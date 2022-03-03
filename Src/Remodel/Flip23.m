@@ -39,8 +39,8 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip23(Geo_0, Geo_n, Geo, Dofs, Set
 	        Geo   = BuildGlobalIds(Geo); 
 			Geo_n = BuildGlobalIds(Geo_n);
 			
-			Geo   = UpdateFacesArea(Geo);
-			Geo_n = UpdateFacesArea(Geo_n);
+			Geo   = UpdateMeasures(Geo);
+			Geo_n = UpdateMeasures(Geo_n);
 
             if ~CheckConvexity(Tnew, Geo_backup) && CheckTris(Geo)
 				fprintf('=>> 23 Flip.\n');
@@ -54,8 +54,8 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip23(Geo_0, Geo_n, Geo, Dofs, Set
 					continue
 				end
 				newYgIds = unique([newYgIds; Geo.AssemblegIds]);
-				Geo   = UpdateFacesArea(Geo);
-				Geo_n = UpdateFacesArea(Geo_n);
+				Geo   = UpdateMeasures(Geo);
+				Geo_n = UpdateMeasures(Geo_n);
 			else
             	Geo   = Geo_backup;
 				Geo_n = Geo_n_backup;

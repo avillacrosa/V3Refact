@@ -5,8 +5,7 @@ function Y = BuildYFromX(Cell, Cells, XgID, Set)
 	nverts = length(Tets);
 	for i=1:nverts % 1 vert = 1 tet
 		T = Tets(i,:);
-		x = [Cells(T(1)).X; Cells(T(2)).X; ...
-			 Cells(T(3)).X; Cells(T(4)).X];
+		x = [Cells(T(1)).X; Cells(T(2)).X; Cells(T(3)).X; Cells(T(4)).X];
 
 		% Condition for the case where 3 nodes are ghost nodes,
 		% i.e. external vertex

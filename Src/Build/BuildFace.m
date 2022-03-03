@@ -1,4 +1,4 @@
-function Face = BuildFace(ci, cj, Cell, CellJ, XgID, Set)
+function Face = BuildFace(ci, cj, ncells, Cell, XgID, Set)
 	ij			= [ci, cj];
 	face_ids	= sum(ismember(Cell.T,ij),2)==2; 
 
@@ -6,7 +6,7 @@ function Face = BuildFace(ci, cj, Cell, CellJ, XgID, Set)
 	Face.ij				= ij;
 	Face.globalIds		= -1;
 	Face.InterfaceType	= BuildInterfaceType(ij, XgID);
-	Face.Centre			= BuildFaceCentre(ij, Cell.X, Cell.Y(face_ids,:), Set.f);
+	Face.Centre			= BuildFaceCentre(ij, ncells,  Cell.X, Cell.Y(face_ids,:), Set.f);
 	Face.Tris			= BuildEdges(Cell.T, face_ids, Face.Centre, Cell.X, Cell.Y);
     
 	[Face.Area, Face.TrisArea]  = ComputeFaceArea(Face, Cell.Y);

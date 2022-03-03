@@ -1,6 +1,6 @@
 function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	%% Build nodal mesh 
-	X = BuildTopo();
+	X = BuildTopo(Geo.nx, Geo.ny, 0);
 	Geo.nCells = length(X);
 
 	%% Centre Nodal position at (0,0)
@@ -44,7 +44,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
         for j  = 1:length(Neigh_nodes)
 			cj    = Neigh_nodes(j);
 			CellJ = Geo.Cells(cj);
-			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.Cells(c), CellJ, Geo.XgID, Set);
+			Geo.Cells(c).Faces(j) = BuildFace(c, cj, Geo.nCells, Geo.Cells(c), Geo.XgID, Set);
             Geo.Cells(c).Faces(j).Area0 = Geo.Cells(c).Faces(j).Area;
         end
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));

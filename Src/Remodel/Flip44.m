@@ -34,8 +34,8 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_0, Geo_n, Geo, Dofs, Set
 	        Geo   = BuildGlobalIds(Geo); 
 			Geo_n = BuildGlobalIds(Geo_n);
 
-			Geo   = UpdateFacesArea(Geo);
-			Geo_n = UpdateFacesArea(Geo_n);
+			Geo   = UpdateMeasures(Geo);
+			Geo_n = UpdateMeasures(Geo_n);
 
             if ~CheckConvexity(Tnew,Geo_backup) && CheckTris(Geo)
     			fprintf('=>> 44 Flip.\n');
@@ -57,8 +57,8 @@ function [Geo_n, Geo, Dofs, Set, newYgIds] = Flip44(Geo_0, Geo_n, Geo, Dofs, Set
 				        Geo_n.Cells(tNode).Y(end-length(news)+1:end,:) = Geo.Cells(tNode).Y(end-length(news)+1:end,:);
 			        end
                 end
-				Geo   = UpdateFacesArea(Geo);
-				Geo_n = UpdateFacesArea(Geo_n);
+				Geo   = UpdateMeasures(Geo);
+				Geo_n = UpdateMeasures(Geo_n);
             else
                 Geo   = Geo_backup;
 				Geo_n = Geo_n_backup;

@@ -26,7 +26,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
     	%% Update mechanical nodes
     	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY+Geo.nCells))';
     	Geo = UpdateVertices(Geo, Set, dy_reshaped);
-		Geo = UpdateFacesArea(Geo);
+		Geo = UpdateMeasures(Geo);
 
         if Set.nu > Set.nu0 && gr<1e-8
             Set.nu = max(Set.nu/2, Set.nu0);
