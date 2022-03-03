@@ -7,7 +7,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_n, Geo, Dofs, S
 	else
     	dof=Dofs.Free;
 	end
-	dy=zeros((Geo.numY+Geo.numF)*3, 1);
+	dy=zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
 	dyr=norm(dy(dof)); gr=norm(g(dof));
 	gr0=gr;
 
@@ -24,7 +24,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_n, Geo, Dofs, S
     	dy(dof)=-K(dof,dof)\g(dof);
     	alpha = LineSearch(Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes
-    	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY))';
+    	dy_reshaped = reshape(dy * alpha, 3, (Geo.numF+Geo.numY+Geo.nCells))';
     	Geo = UpdateVertices(Geo, Set, dy_reshaped);
 		Geo = UpdateFacesArea(Geo);
 

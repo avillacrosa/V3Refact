@@ -5,9 +5,9 @@ function [Dofs]=GetDOFs(Geo, Set)
     %   3) the rest are set to be free
     % TODO FIXME HARDCODE
     dim = 3;
-    gconstrained = zeros((Geo.numY+Geo.numF)*3, 1);
-    gprescribed  = zeros((Geo.numY+Geo.numF)*3, 1);
-
+    gconstrained = zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
+    gprescribed  = zeros((Geo.numY+Geo.numF+Geo.nCells)*3, 1);
+    
     for c = 1:Geo.nCells
         Y     = Geo.Cells(c).Y;
         gIDsY = Geo.Cells(c).globalIds;

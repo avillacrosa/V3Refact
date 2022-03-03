@@ -21,7 +21,7 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_n, Geo, Dofs, Set)
     while 1
         [g,K]=KgGlobal(Geo_n, Geo, Set);
         
-        dy=zeros((Geo.numF+Geo.numY)*3);
+        dy=zeros((Geo.numF+Geo.numY+Geo.nCells)*3);
         dyr=norm(dy(Dofs.Remodel));
         gr=norm(g(Dofs.Remodel)); 
         fprintf('Local Problem ->Iter: %i, ||gr||= %.3e ||dyr||= %.3e  nu/nu0=%.3e  dt/dt0=%.3g \n',0,gr,dyr,Set.nu/Set.nu0,Set.dt/Set.dt0);

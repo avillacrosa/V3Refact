@@ -23,7 +23,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	Twg = conv(Twg);
 
 	% TODO FIXME This does not seem optimal...
-	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds"];
+	CellFields = ["X", "T", "Y", "Faces", "Vol", "Vol0", "Area", "Area0", "globalIds", "cglobalIds"];
 	FaceFields = ["ij", "Centre", "Tris", "globalIds", "InterfaceType", "Area", "Area0", "TrisArea"];
 
 	Geo.Cells = BuildStructArray(length(X), CellFields);
