@@ -72,8 +72,30 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
         Geo.Cells(c).Area  = ComputeCellArea(Geo.Cells(c));
         Geo.Cells(c).Area0 = Geo.Cells(c).Area;
         Geo.Cells(c).Vol   = ComputeCellVolume(Geo.Cells(c));
-        Geo.Cells(c).Vol0  = Geo.Cells(c).Vol;
-    end
+        Geo.Cells(c).Vol0  = Geo.Cells(c).Vol;		
+        Geo.Cells(c).ExternalLambda = 1;
+		Geo.Cells(c).InternalLambda = 1;
+		Geo.Cells(c).SubstrateLambda = 1;
+	end
+	
+	% Differential adhesion values
+	for l1 = 1:size(Set.lambdaS1CellFactor,1)
+		ci = Set.lambdaS1CellFactor(l1,1);
+		val = Set.lambdaS1CellFactor(l1,2);
+		Geo.Cells(ci).ExternalLambda = val;
+	end
+
+	for l2 = 1:size(Set.lambdaS2CellFactor,1)
+		ci = Set.lambdaS2CellFactor(l2,1);
+		val = Set.lambdaS2CellFactor(l2,2);
+		Geo.Cells(ci).InternalLambda = val;
+	end
+
+	for l3 = 1:size(Set.lambdaS3CellFactor,1)
+		ci = Set.lambdaS3CellFactor(l3,1);
+		val = Set.lambdaS3CellFactor(l3,2);
+		Geo.Cells(ci).SubstrateLambda = val;
+	end
 	% Unique Ids for each point (vertex, node or face center) used in K
 	Geo = BuildGlobalIds(Geo);
 	% TODO FIXME bad
