@@ -38,6 +38,7 @@ function Set = SetDefault(Set)
     DSet.lambdaS4CellFactor			= [];
     DSet.EnergyBarrier				= true;
     DSet.lambdaB					= 5;
+    DSet.lambdaV					= 5;
     DSet.Beta						= 1;
     DSet.Bending					= false;
     DSet.lambdaBend					= 0.01;

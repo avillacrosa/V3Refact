@@ -7,8 +7,6 @@ function [g,K,EnergyV]=KgVolume(Geo, Set)
 	
 	%% Loop over Cells 
 	% Analytical residual g and Jacobian K
-	% TODO FIXME hard code
-	Set.lambdaV = 5;
 	for c=1:Geo.nCells
 		if Geo.Remodelling
 			if ~ismember(c,Geo.AssembleNodes)
