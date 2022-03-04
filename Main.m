@@ -7,9 +7,9 @@ disp('------------- SIMULATION STARTS -------------');
 % and move the main flow (this file) to another file, so that multiple 
 % simulations can be run from a single file
 
-Stretch
+% Stretch
 % StretchBulk
-% Compress
+Compress
 
 Set=SetDefault(Set);
 Set=InitiateOutputFolder(Set);
