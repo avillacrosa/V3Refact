@@ -15,7 +15,7 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 
 	%% Build nodal mesh 
 	X = BuildTopo(Geo.nx, Geo.ny, 0);
-	Geo.nCells = length(X);
+	Geo.nCells = size(X,1);
 
 	%% Centre Nodal position at (0,0)
 	X(:,1)=X(:,1)-mean(X(:,1));
@@ -24,7 +24,14 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 
 	%% Perform Delaunay
 	[Geo.XgID,X]=SeedWithBoundingBox(X,Set.s);
-
+    if Set.Substrate
+    	%% Add far node in the bottom
+    	Xg=X(Geo.XgID,:);
+        X(Geo.XgID,:)=[];
+    	Xg(Xg(:,3)<mean(X(:,3)),:)=[];
+    	Geo.XgID=(size(X,1)+1):(size(X,1)+size(Xg,1)+1);
+    	X=[X;Xg;mean(X(:,1)), mean(X(:,2)), -50];
+    end
 	Twg=delaunay(X);
 	% Remove tetrahedras formed only by ghost nodes
 
@@ -32,13 +39,15 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	% After removing ghost tetrahedras, some nodes become disconnected, 
 	% that is, not a part of any tetrahedra. Therefore, they should be 
 	% removed from X
-	X    = X(unique(Twg),:);
 
-	conv = zeros(max(max(Twg)),1);
-
-	conv(unique(Twg)) = 1:size(X);
-	Twg = conv(Twg);
-
+    %Re-number the surviving tets
+ 	X    = X(unique(Twg),:);  % This doe snothing no ?
+ 	conv = zeros(size(X,1),1);
+ 	conv(unique(Twg)) = 1:size(X);
+ 	Twg = conv(Twg);
+    if Set.Substrate
+        XgSub=size(X,1);
+    end
 	%% Populate the Geo struct
 
 	% TODO FIXME Fields that structs in the Cells array and Faces in a Cell 
@@ -54,10 +63,15 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 		Geo.Cells(c).T     = Twg(any(ismember(Twg,c),2),:);
 	end
 	% Cell vertices
-	for c = 1:Geo.nCells
+    for c = 1:Geo.nCells
 		Geo.Cells(c).Y     = BuildYFromX(Geo.Cells(c), Geo.Cells, ...
 													Geo.XgID, Set);
-	end
+    end
+    if Set.Substrate
+    	for c = 1:Geo.nCells
+		    Geo.Cells(c).Y = BuildYSubstrate(Geo.Cells(c), Geo.Cells, Geo.XgID, Set, XgSub);
+	    end
+    end
 	% Cell Faces, Volumes and Areas
 	for c = 1:Geo.nCells
 		Neigh_nodes = unique(Geo.Cells(c).T);
@@ -98,6 +112,19 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
 	end
 	% Unique Ids for each point (vertex, node or face center) used in K
 	Geo = BuildGlobalIds(Geo);
+	if Set.Substrate
+    	% update the position of the surface centers on the substrate
+		for c = 1:Geo.nCells
+			for f = 1:length(Geo.Cells(c).Faces)
+				Face = Geo.Cells(c).Faces(f);
+				if Face.ij(2)==XgSub
+            		Geo.Cells(c).Faces(f).Centre(3)=Set.SubstrateZ;
+					Geo.Cells(c).Faces(f).InterfaceType	= BuildInterfaceType(Face.ij, Geo.XgID);
+				end
+			end
+		end
+		Geo = UpdateMeasures(Geo);
+	end 
 	% TODO FIXME bad
 	Geo.AssembleNodes = 1:Geo.nCells;
     %% Define BarrierTri0 
@@ -106,7 +133,12 @@ function [Geo, Set] = InitializeGeometry3DVertex(Geo,Set)
         Cell = Geo.Cells(c);
         for f = 1:length(Geo.Cells(c).Faces)
             Face = Cell.Faces(f);
-            Set.BarrierTri0=min([Face.TrisArea; Set.BarrierTri0]);
+			% TODO FIXME bad programming...
+			if length(Face.Tris)==3
+				Set.BarrierTri0=min([Face.TrisArea(1); Set.BarrierTri0]);
+			else
+				Set.BarrierTri0=min([Face.TrisArea; Set.BarrierTri0]);
+			end
         end
     end
     Set.BarrierTri0=Set.BarrierTri0/10;

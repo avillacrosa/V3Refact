@@ -7,16 +7,22 @@ disp('------------- SIMULATION STARTS -------------');
 % and move the main flow (this file) to another file, so that multiple 
 % simulations can be run from a single file
 
-Stretch
+% Stretch
+% Substrate
 % StretchBulk
-% Compress
+Compress
 
 Set=SetDefault(Set);
 Set=InitiateOutputFolder(Set);
 Set.flog = fopen(Set.log, 'w+');
 
 [Geo, Set] = InitializeGeometry3DVertex(Geo, Set);
-Dofs = GetDOFs(Geo, Set);
+% TODO FIXME, this is bad, should be joined somehow
+if ~Set.Substrate
+    Dofs = GetDOFs(Geo, Set);
+else
+    Dofs = GetDOFsSubstrate(Geo, Set);
+end
 Geo.Remodelling = false;
 
 t=0; tr=0; tp=0;
