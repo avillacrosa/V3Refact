@@ -14,6 +14,8 @@ function Set = SetDefault(Set)
     DSet.SeedingMethod				= 1;
     DSet.s							= 1.5;
     DSet.ObtainX					= 0;
+	DSet.Substrate                  = false;
+	DSet.SubstrateZ                 = 0;
     %% 2D input image to obtain  the initial topology of the cells
     DSet.InputSegmentedImage		= [];
     DSet.CellAspectRatio			= 1;
@@ -63,9 +65,9 @@ function Set = SetDefault(Set)
     DSet.Parallel					= false;
     DSet.Sparse						= false;
     %% ================= Boundary Condition and loading setting ===========
-    DSet.BC							= 1;
-    DSet.VFixd						= -1.5;
-    DSet.VPrescribed				= 1.5;
+    DSet.BC							= nan;
+    DSet.VFixd						= -inf;
+    DSet.VPrescribed				= inf;
     DSet.dx							= 2;
     DSet.TStartBC					= 20;
     DSet.TStopBC					= 200;
