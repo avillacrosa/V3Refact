@@ -1,8 +1,6 @@
 function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, Dofs, Set, K, g, numStep, t)
 	% TODO FIXME There should be a cleaner way for this...
 	if Geo.Remodelling
-    	% Changed by Adria. Typo
-	%     dfs=Dof.Remodel;
     	dof=Dofs.Remodel;
 	else
     	dof=Dofs.Free;
@@ -21,6 +19,7 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
     auxgr(1)=gr;
 	ig = 1;
 	while (gr>Set.tol || dyr>Set.tol) && Set.iter<Set.MaxIter
+
     	dy(dof)=-K(dof,dof)\g(dof);
     	alpha = LineSearch(Geo_0, Geo_n, Geo, Dofs, Set, g, dy);
     	%% Update mechanical nodes
@@ -28,9 +27,6 @@ function [Geo, g,K,Energy, Set, gr, dyr, dy] = NewtonRaphson(Geo_0, Geo_n, Geo, 
     	Geo = UpdateVertices(Geo, Set, dy_reshaped);
 		Geo = UpdateMeasures(Geo);
 
-        if Set.nu > Set.nu0 && gr<1e-8
-            Set.nu = max(Set.nu/2, Set.nu0);
-        end
     	%% ----------- Compute K, g ---------------------------------------
     	[g,K,Energy]=KgGlobal(Geo_0, Geo_n, Geo, Set);
     	dyr=norm(dy(dof)); gr=norm(g(dof));

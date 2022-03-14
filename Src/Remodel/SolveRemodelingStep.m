@@ -45,13 +45,16 @@ function [Geo, Set, DidNotConverge]=SolveRemodelingStep(Geo_0, Geo_n, Geo, Dofs,
             Set.nu=original_nu;
             break;
         else 
-            Set.MaxIter=Set.MaxIter0;
-            fprintf('=====>> Local Problem converged in %i iterations.\n',Set.iter);
-            fprintf(Set.flog, '=====>> Local Problem converged in %i iterations.\n',Set.iter);
-            DidNotConverge=false;
-            Set.nu=original_nu;
-			Geo.Remodelling = false;
-            break;
+            if Set.nu/Set.nu0 == 1
+				Set.MaxIter=Set.MaxIter0;
+				fprintf('=====>> Local Problem converged in %i iterations.\n',Set.iter);
+				DidNotConverge=false;
+				Set.nu=original_nu;
+				Geo.Remodelling = false;
+				break;
+            else
+				 Set.nu = max(Set.nu/2, Set.nu0);
+            end
         end
     end 
 end 
